@@ -13,3 +13,9 @@ What Branch Should You Use? WBSYU!
 * pq-legacy is for the plebs who don't have a comma pedal and a compatible ABS unit
 * pq-private is for the adventurous PQ bois who have a pedal and a compatible ABS unit!
 * This next part should be pretty self explanatory. If you just made your J533 harness from a photo you got from discord, use the extcan branch. If you know you're on drivetrain/powertrain, which you will know, then use the drivetrain branch
+
+Installing a branch
+=======================
+* First figure out what branch you want to use.
+* Then run this command when SSH'ed into your (Fr)Eon
+* `cd /data/ && git clone https://github.com/actuallylemoncurd/openpilot/ -b "BRANCH NAME HERE" --recurse-submodules && chmod -R 777 /data/openpilot && reboot`
