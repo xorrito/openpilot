@@ -19,3 +19,5 @@ Installing a branch
 * First figure out what branch you want to use.
 * Then run this command when SSH'ed into your (Fr)Eon
 * `cd /data/ && git clone https://github.com/actuallylemoncurd/openpilot/ -b "BRANCH NAME HERE" --recurse-submodules && chmod -R 777 /data/openpilot && reboot`
+
+Reach out to me on discord: khonsu#2473 if you have any questions
