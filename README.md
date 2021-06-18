@@ -19,5 +19,10 @@ Installing a branch
 * First figure out what branch you want to use.
 * Then run this command when SSH'ed into your (Fr)Eon
 * `cd /data/ && git clone https://github.com/actuallylemoncurd/openpilot/ -b "BRANCH NAME HERE" --recurse-submodules && chmod -R 777 /data/openpilot && reboot`
+* You can also try using my install URL's!
+https://tinyurl.com/legacy-extcan
+https://tinyurl.com/legacy-drivetrain
+https://tinyurl.com/private-extcan
+https://tinyurl.com/private-drivetrain
 
 Reach out to me on discord: khonsu#2473 if you have any questions
