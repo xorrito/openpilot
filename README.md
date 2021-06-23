@@ -21,13 +21,13 @@ Installing a branch
 * `cd /data/ && git clone https://github.com/actuallylemoncurd/openpilot/ -b "BRANCH NAME HERE" --recurse-submodules && chmod -R 777 /data/openpilot && reboot`
 * You can also try using my install URL's!
 
-https://tinyurl.com/legacy-extcan
+https://www.khonsu.cc/PQ-Legacy-ExtCan
 
-https://tinyurl.com/legacy-drivetrain
+https://www.khonsu.cc/PQ-Legacy-Drivetrain
 
-https://tinyurl.com/private-extcan
+https://www.khonsu.cc/PQ-Private-ExtCan
 
-https://tinyurl.com/private-drivetrain
+https://www.khonsu.cc/PQ-Private-Drivetrain
 
 
 Reach out to me on discord: khonsu#2473 if you have any questions
