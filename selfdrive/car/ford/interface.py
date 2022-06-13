@@ -2,21 +2,16 @@
 from cereal import car
 from selfdrive.config import Conversions as CV
 from selfdrive.car.ford.values import MAX_ANGLE
-from selfdrive.car import STD_CARGO_KG, scale_rot_inertia, scale_tire_stiffness, gen_empty_fingerprint
+from selfdrive.car import STD_CARGO_KG, scale_rot_inertia, scale_tire_stiffness, gen_empty_fingerprint, get_safety_config
 from selfdrive.car.interfaces import CarInterfaceBase
 
 
 class CarInterface(CarInterfaceBase):
-
-  @staticmethod
-  def compute_gb(accel, speed):
-    return float(accel) / 3.0
-
   @staticmethod
   def get_params(candidate, fingerprint=gen_empty_fingerprint(), car_fw=None):
     ret = CarInterfaceBase.get_std_params(candidate, fingerprint)
     ret.carName = "ford"
-    ret.safetyModel = car.CarParams.SafetyModel.ford
+    ret.safetyConfigs = [get_safety_config(car.CarParams.SafetyModel.ford)]
     ret.dashcamOnly = True
 
     ret.wheelbase = 2.85
@@ -68,8 +63,8 @@ class CarInterface(CarInterfaceBase):
   # to be called @ 100hz
   def apply(self, c):
 
-    can_sends = self.CC.update(c.enabled, self.CS, self.frame, c.actuators,
+    ret = self.CC.update(c.enabled, self.CS, self.frame, c.actuators,
                                c.hudControl.visualAlert, c.cruiseControl.cancel)
 
     self.frame += 1
-    return can_sends
+    return ret
