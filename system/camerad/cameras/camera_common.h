@@ -29,7 +29,7 @@
 #define CAMERA_ID_MAX 10
 
 const int UI_BUF_COUNT = 4;
-const int YUV_BUFFER_COUNT = Hardware::EON() ? 100 : 40;
+const int YUV_BUFFER_COUNT = 100;
 
 enum CameraType {
   RoadCam = 0,
@@ -77,11 +77,6 @@ typedef struct FrameMetadata {
   float gain;
   float measured_grey_fraction;
   float target_grey_fraction;
-
-  // Focus
-  unsigned int lens_pos;
-  float lens_err;
-  float lens_true_pos;
 
   float processing_time;
 } FrameMetadata;

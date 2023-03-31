@@ -118,6 +118,9 @@ struct CarEvent @0x9b1657f34caf3ad3 {
     #dp
     speedLimitActive @116;
     speedLimitValueChange @117;
+    leadMovingAlertSilent @118;
+    leadMovingAlert @119;
+    manualSteeringRequiredBlinkersOn @120;
 
     radarCanErrorDEPRECATED @15;
     communityFeatureDisallowedDEPRECATED @62;
@@ -209,9 +212,6 @@ struct CarState {
   # clutch (manual transmission only)
   clutchPressed @28 :Bool;
 
-  # which packets this state came from
-  canMonoTimes @12: List(UInt64);
-
   # blindspot sensors
   leftBlindspot @33 :Bool; # Is there something blocking the left lane change
   rightBlindspot @34 :Bool; # Is there something blocking the right lane change
@@ -220,9 +220,13 @@ struct CarState {
   charging @43 :Bool;
 
   # dp
-  cruiseActualEnabled @46 :Bool;
-  engineRPM @47 :Float32;
-  distanceLines @48:UInt8;
+  engineRPM @46 :Float32;
+  distanceLines @47 :UInt8;
+  rightBlindspotD1 @48 :Float32;
+  rightBlindspotD2 @49 :Float32;
+  leftBlindspotD1 @50 :Float32;
+  leftBlindspotD2 @51 :Float32;
+  blindspotside @52 :Float32;
 
   struct WheelSpeeds {
     # optional wheel speeds
@@ -277,9 +281,11 @@ struct CarState {
     }
   }
 
+  # deprecated
   errorsDEPRECATED @0 :List(CarEvent.EventName);
   brakeLightsDEPRECATED @19 :Bool;
   steeringRateLimitedDEPRECATED @29 :Bool;
+  canMonoTimesDEPRECATED @12: List(UInt64);
 }
 
 # ******* radar state @ 20hz *******
@@ -287,9 +293,6 @@ struct CarState {
 struct RadarData @0x888ad6581cf0aacb {
   errors @0 :List(Error);
   points @1 :List(RadarPoint);
-
-  # which packets this state came from
-  canMonoTimes @2 :List(UInt64);
 
   enum Error {
     canError @0;
@@ -314,6 +317,9 @@ struct RadarData @0x888ad6581cf0aacb {
     # some radars flag measurements VS estimates
     measured @6 :Bool;
   }
+
+  # deprecated
+  canMonoTimesDEPRECATED @2 :List(UInt64);
 }
 
 # ******* car controls @ 100hz *******
@@ -340,6 +346,8 @@ struct CarControl {
 
   cruiseControl @4 :CruiseControl;
   hudControl @5 :HUDControl;
+
+  latController @17 :Text;
 
   struct Actuators {
     # range from 0.0 - 1.0
@@ -437,6 +445,15 @@ struct CarParams {
   enableBsm @56 :Bool;       # blind spot monitoring
   flags @64 :UInt32;         # flags for car specific quirks
   experimentalLongitudinalAvailable @71 :Bool;
+  #dp: enable torque interceptor
+  enableTorqueInterceptor @72 :Bool;
+  #dp: alt tune collection
+  latTuneCollection @73 :LatTunes;
+  struct LatTunes {
+    pid @0 :LateralPIDTuning;
+    lqr @1 :LateralLQRTuning;
+    torque @2 :LateralTorqueTuning;
+  }
 
   minEnableSpeed @7 :Float32;
   minSteerSpeed @8 :Float32;
@@ -475,7 +492,7 @@ struct CarParams {
   vEgoStarting @59 :Float32; # Speed at which the car goes into starting state
   stoppingControl @31 :Bool; # Does the car allow full control even at lows speeds when stopping
   steerControlType @34 :SteerControlType;
-  radarOffCan @35 :Bool; # True when radar objects aren't visible on CAN
+  radarUnavailable @35 :Bool; # True when radar objects aren't visible on CAN or aren't parsed out
   stopAccel @60 :Float32; # Required acceleration to keep vehicle stationary
   stoppingDecelRate @52 :Float32; # m/s^2/s while trying to stop
   startAccel @32 :Float32; # Required acceleration to get car moving
@@ -593,10 +610,11 @@ struct CarParams {
     subaruLegacy @22;  # pre-Global platform
     hyundaiLegacy @23;
     hyundaiCommunity @24;
-    stellantisDEPRECATED @25;  # Consolidated with Chrysler; may be recycled for the next new model
+    volkswagenMlb @25;
     hongqi @26;
     body @27;
     hyundaiCanfd @28;
+    volvoC1 @29;
   }
 
   enum SteerControlType {
@@ -622,6 +640,8 @@ struct CarParams {
     request @5 :List(Data);
     brand @6 :Text;
     bus @7 :UInt8;
+    logging @8 :Bool;
+    obdMultiplexing @9 :Bool;
   }
 
   enum Ecu {
@@ -640,6 +660,7 @@ struct CarParams {
     shiftByWire @16;
     adas @19;
     cornerRadar @21;
+    hvac @20;
 
     # Toyota only
     dsu @6;
@@ -653,7 +674,7 @@ struct CarParams {
     hcp @18;  # Hybrid Control Processor
 
     # Hyundai only
-    vcu @20;  # Vehicle (Motor) Control Unit
+    parking @22;  # ADAS parking ECU
 
     debug @17;
   }

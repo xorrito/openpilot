@@ -4,7 +4,7 @@ from common.numpy_fast import interp
 from system.swaglog import cloudlog
 from selfdrive.controls.lib.lateral_mpc_lib.lat_mpc import LateralMpc
 from selfdrive.controls.lib.lateral_mpc_lib.lat_mpc import N as LAT_MPC_N
-from selfdrive.controls.lib.drive_helpers import CONTROL_N, MIN_SPEED
+from selfdrive.controls.lib.drive_helpers import CONTROL_N, MIN_SPEED, get_lane_laneless_mode
 from selfdrive.controls.lib.desire_helper import DesireHelper
 import cereal.messaging as messaging
 from cereal import log
@@ -67,6 +67,10 @@ class LateralPlanner:
       self.dp_lanelines_enable = sm['dragonConf'].dpLateralLanelines
       self.dp_camera_offset = sm['dragonConf'].dpLateralCameraOffset
       self.dp_path_offset = sm['dragonConf'].dpLateralPathOffset
+      if sm['controlsState'].dpLateralAltActive and sm['dragonConf'].dpLateralAltLanelines:
+        self.dp_lanelines_enable = True
+        self.dp_camera_offset = sm['dragonConf'].dpLateralAltCameraOffset
+        self.dp_path_offset = sm['dragonConf'].dpLateralAltPathOffset
 
     # Parse model predictions
     md = sm['modelV2']
@@ -80,14 +84,14 @@ class LateralPlanner:
       # dp - when laneline mode enabled, we use old logic (including lane changing)
       d_path_xyz = self.lanelines_mode(md, sm['carState'], sm['carControl'].latActive, sm['dragonConf'])
     else:
-    # dp -- tab spacing begin (stock logic) --
+      # dp -- tab spacing begin (stock logic) --
       # Lane change logic
       desire_state = md.meta.desireState
       if len(desire_state):
         self.l_lane_change_prob = desire_state[log.LateralPlan.Desire.laneChangeLeft]
         self.r_lane_change_prob = desire_state[log.LateralPlan.Desire.laneChangeRight]
       lane_change_prob = self.l_lane_change_prob + self.r_lane_change_prob
-      self.DH.update(sm['carState'], sm['carControl'].latActive, lane_change_prob, sm['dragonConf'])
+      self.DH.update(sm['carState'], sm['carControl'].latActive, lane_change_prob, sm['dragonConf'], md)
 
       d_path_xyz = self.path_xyz
     # dp -- tab spacing end (stock logic) --
@@ -148,7 +152,7 @@ class LateralPlanner:
     lateralPlan.solverExecutionTime = self.lat_mpc.solve_time
 
     lateralPlan.desire = self.DH.desire
-    lateralPlan.useLaneLines = False
+    lateralPlan.useLaneLines = self.dp_lanelines_enable and self.dp_lanelines_active
     lateralPlan.laneChangeState = self.DH.lane_change_state
     lateralPlan.laneChangeDirection = self.DH.lane_change_direction
 
@@ -165,7 +169,7 @@ class LateralPlanner:
 
     # Lane change logic
     lane_change_prob = self.LP.l_lane_change_prob + self.LP.r_lane_change_prob
-    self.DH.update(car_state, lat_active, lane_change_prob, dragon_conf)
+    self.DH.update(car_state, lat_active, lane_change_prob, dragon_conf, md)
 
     # Turn off lanes during lane change
     if self.DH.desire == log.LateralPlan.Desire.laneChangeRight or self.DH.desire == log.LateralPlan.Desire.laneChangeLeft:
@@ -173,10 +177,7 @@ class LateralPlanner:
       self.LP.rll_prob *= self.DH.lane_change_ll_prob
 
     # dynamic laneline/laneless logic
-    if self.LP.lll_prob < 0.3 and self.LP.rll_prob < 0.3:
-      self.dp_lanelines_active_tmp = False
-    elif self.LP.lll_prob > 0.5 and self.LP.rll_prob > 0.5:
-      self.dp_lanelines_active_tmp = True
+    self.dp_lanelines_active_tmp = get_lane_laneless_mode(self.LP.lll_prob, self.LP.rll_prob, self.dp_lanelines_active_tmp)
     self.dp_lanelines_active = self.dp_lanelines_active_tmp
 
     # Calculate final driving path and set MPC costs
@@ -184,4 +185,3 @@ class LateralPlanner:
       return self.LP.get_d_path(self.v_ego, self.t_idxs, self.path_xyz)
     else:
       return self.path_xyz
-

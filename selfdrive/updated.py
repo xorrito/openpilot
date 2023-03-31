@@ -72,7 +72,7 @@ def set_consistent_flag(consistent: bool) -> None:
 
 def parse_release_notes(basedir: str) -> bytes:
   try:
-    with open(os.path.join(basedir, "CHANGELOGS.md"), "rb") as f:
+    with open(os.path.join(basedir, "CHANGELOGS_c2.md"), "rb") as f:
       r = f.read().split(b'\n\n', 1)[0]  # Slice latest release notes
     try:
       return bytes(MarkdownIt().render(r.decode("utf-8")), encoding="utf-8")
@@ -165,9 +165,9 @@ def init_overlay() -> None:
   else:
     run(mount_cmd)
 
-  # git_diff = run(["git", "diff"], OVERLAY_MERGED)
-  # params.put("GitDiff", git_diff)
-  # cloudlog.info(f"git diff output:\n{git_diff}")
+  git_diff = run(["git", "diff"], OVERLAY_MERGED)
+  params.put("GitDiff", git_diff)
+  cloudlog.info(f"git diff output:\n{git_diff}")
 
 
 def finalize_update() -> None:
@@ -420,7 +420,12 @@ class Updater:
 def main() -> None:
   params = Params()
 
+  updater = Updater()
+  update_failed_count = 0  # TODO: Load from param?
+  exception = None
+
   if params.get_bool("DisableUpdates"):
+    updater.set_params(update_failed_count, exception)
     cloudlog.warning("updates are disabled by the DisableUpdates param")
     exit(0)
 
@@ -443,19 +448,18 @@ def main() -> None:
     t = datetime.datetime.utcnow().isoformat()
     params.put("InstallDate", t.encode('utf8'))
 
-  updater = Updater()
-  update_failed_count = 0  # TODO: Load from param?
-
   # no fetch on the first time
   wait_helper = WaitTimeHelper()
   wait_helper.only_check_for_update = True
+
+  # invalidate old finalized update
+  set_consistent_flag(False)
 
   # Run the update loop
   while True:
     wait_helper.ready_event.clear()
 
     # Attempt an update
-    exception = None
     try:
       # TODO: reuse overlay from previous updated instance if it looks clean
       init_overlay()
