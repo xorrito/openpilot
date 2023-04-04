@@ -69,7 +69,8 @@ def create_acc_accel_control(packer, bus, acc_type, enabled, accel, acc_control,
     "ACS_Anhaltewunsch": acc_type == 1 and stopping,
     "ACS_Sollbeschl": accel if acc_control == 1 else 3.01,
     "ACS_zul_Regelabw": 0.2 if acc_control == 1 else 1.27,
-    "ACS_max_AendGrad": 3.0 if acc_control == 1 else 5.08,
+    "ACS_max_AendGrad": 1.0 if acc_control == 1 else 5.08,
+    "ACS_FreigSollB": acc_control == 1,
   }
 
   commands.append(packer.make_can_msg("ACC_System", bus, values))
@@ -83,6 +84,7 @@ def create_acc_hud_control(packer, bus, acc_hud_status, set_speed, lead_distance
     "ACA_Zeitluecke": 2,
     "ACA_V_Wunsch": set_speed,
     "ACA_gemZeitl": lead_distance,
+    "ACA_PrioDisp": 3,
     # TODO: ACA_ID_StaACC, ACA_AnzDisplay, ACA_kmh_mph, ACA_PrioDisp, ACA_Aend_Zeitluecke
     # display/display-prio handling probably needed to stop confusing the instrument cluster
     # kmh_mph handling probably needed to resolve rounding errors in displayed setpoint
