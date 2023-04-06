@@ -69,7 +69,7 @@ def create_acc_accel_control(packer, bus, acc_type, enabled, accel, acc_control,
     "ACS_Anhaltewunsch": acc_type == 1 and stopping,
     "ACS_FreigSollB": acc_enabled,
     "ACS_Sollbeschl": accel if acc_control == 1 else 3.01,
-    "ACS_zul_Regelabw": 0.2 if acc_control == 1 else 1.27,
+    "ACS_zul_Regelabw": 0 if acc_control == 1 else 1.27,
     "ACS_max_AendGrad": 1.0 if acc_control == 1 else 5.08,
   }
 
