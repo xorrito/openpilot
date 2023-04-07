@@ -82,7 +82,7 @@ def create_acc_hud_control(packer, bus, acc_hud_status, set_speed, lead_distance
   values = {
     "ACA_StaACC": acc_hud_status,
     "ACA_Zeitluecke": 2,
-    "ACA_V_Wunsch": set_speed,
+    "ACA_V_Wunsch": set_speed else 255,
     "ACA_gemZeitl": lead_distance,
     "ACA_PrioDisp": 3,
     # TODO: ACA_ID_StaACC, ACA_AnzDisplay, ACA_kmh_mph, ACA_Aend_Zeitluecke
