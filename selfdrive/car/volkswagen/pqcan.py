@@ -64,10 +64,10 @@ def create_acc_accel_control(packer, bus, acc_type, enabled, accel, acc_control,
 
   values = {
     "ACS_Sta_ADR": acc_control,
-    "ACS_StSt_Info": acc_control != 1,
+    "ACS_StSt_Info": acc_enabled,
     "ACS_Typ_ACC": acc_type,
     "ACS_Anhaltewunsch": acc_type == 1 and stopping,
-    "ACS_FreigSollB": 1,
+    "ACS_FreigSollB": acc_enabled,
     "ACS_Sollbeschl": accel if acc_control == 1 else 3.01,
     "ACS_zul_Regelabw": 0 if acc_control == 1 else 1.27,
     "ACS_max_AendGrad": 1.0 if acc_control == 1 else 5.08,
@@ -85,7 +85,7 @@ def create_acc_hud_control(packer, bus, acc_hud_status, set_speed, lead_distance
     "ACA_V_Wunsch": set_speed,
     "ACA_gemZeitl": lead_distance,
     "ACA_PrioDisp": 3,
-    # TODO: restore dynamic pop-to-foreground/highlight behavior with ACA_PrioDisp and ACA_AnzDisplay
+    # TODO: ACA_ID_StaACC, ACA_AnzDisplay, ACA_kmh_mph, ACA_Aend_Zeitluecke
     # TODO: ACA_kmh_mph handling probably needed to resolve rounding errors in displayed setpoint
   }
 
