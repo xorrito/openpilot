@@ -64,7 +64,7 @@ def create_acc_accel_control(packer, bus, acc_type, enabled, accel, acc_control,
 
   values = {
     "ACS_Sta_ADR": acc_control,
-    "ACS_StSt_Info": acc_control != 1
+    "ACS_StSt_Info": acc_control != 1,
     "ACS_Typ_ACC": acc_type,
     "ACS_Anhaltewunsch": acc_type == 1 and stopping,
     "ACS_FreigSollB": 1,
