@@ -1555,7 +1555,7 @@ VAL_ 872 ACS_zul_Regelabw 254 "ADR_nicht_aktiv" 255 "Fehler" ;
 VAL_ 872 ACS_max_AendGrad 254 "Neutralwert" 0 "Neutralwert" 255 "Fehler" ;
 
 VAL_ 870 AWV_2_Gurtstraffer 0 "Gurt_not_straffen" 1 "Gurt_straffen";
-VAL_ 870 AWV_Infoton 0 "Aus" 1 "Ein" 0 "No Description";
+VAL_ 870 AWV_Infoton 0 "Aus" 1 "Ein";
 VAL_ 870 AWV_2_Warnsymbol 0 "Aus" 1 "Ein";
 VAL_ 870 AWV_2_Warnton 0 "Aus" 1 "Ein";
 VAL_ 870 AWV_2_Ruckprofil 0 "kein_Ruck" 1 "Ruckprofil_1" 2 "Ruckprofil_2" 3 "Ruckprofil_3" 4 "Ruckprofil_4" 5 "Ruckprofil_5" 6 "not_erlaubt" 7 "not_erlaubt";
