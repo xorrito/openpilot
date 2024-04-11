@@ -47,7 +47,7 @@ class CarInterface(CarInterfaceBase):
       # It is documented in a four-part blog series:
       #   https://blog.willemmelching.nl/carhacking/2022/01/02/vw-part1/
       # Panda ALLOW_DEBUG firmware required.
-      ret.dashcamOnly = True
+      ret.dashcamOnly = False
 
     else:
       # Set global MQB parameters
@@ -101,6 +101,15 @@ class CarInterface(CarInterfaceBase):
     ret.longitudinalTuning.kpV = [0.1]
     ret.longitudinalTuning.kiV = [0.0]
     ret.autoResumeSng = ret.minEnableSpeed == -1
+
+    if candidate == CAR.JETTA_SPORTWAGEN:
+      ret.steerActuatorDelay = 0.11
+      ret.lateralTuning.pid.kpBP = [0.0]
+      ret.lateralTuning.pid.kiBP = [0.0]
+      ret.lateralTuning.pid.kf = 0.000005
+      ret.lateralTuning.pid.kpV = [0.020]
+      ret.lateralTuning.pid.kiV = [0.600]
+      CarInterfaceBase.configure_torque_tune(candidate, ret.lateralTuning)
 
     return ret
 

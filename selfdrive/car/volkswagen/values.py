@@ -254,6 +254,11 @@ class CAR(Platforms):
     [VWCarDocs("Volkswagen Passat NMS 2017-22")],
     VolkswagenCarSpecs(mass=1503, wheelbase=2.80, minSteerSpeed=50*CV.KPH_TO_MS, minEnableSpeed=20*CV.KPH_TO_MS),
   )
+  JETTA_SPORTWAGEN = VolkswagenPQPlatformConfig(
+    "VOLKSWAGEN JETTA SPORTWAGEN",  # Chassis AJ
+    [VWCarDocs("Volkswagen Passat NMS 2017-22")], # TODO: similar to passat NMS in car docs. need to update!
+    VolkswagenCarSpecs(mass=1518, wheelbase=2.62),
+  )
   POLO_MK6 = VolkswagenMQBPlatformConfig(
     "VOLKSWAGEN POLO 6TH GEN",  # Chassis AW
     [
