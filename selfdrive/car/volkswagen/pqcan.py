@@ -101,7 +101,7 @@ def create_epb_control(packer, bus, apply_brake, epb_enabled, stopping):
     "EP1_Fkt_Lampe": 0,
     "EP1_Verzoegerung": apply_brake,                        #Brake request in m/s2
     "EP1_Freigabe_Ver": 1 if epb_enabled else 0,            #Allow braking pressure to build.
-    "EP1_Bremslicht": 1 if epb_enabled else 0,              #Enable brake lights
+    "EP1_Bremslicht": 1 if apply_brake != 0 else 0,         #Enable brake lights
     "EP1_HydrHalten": 1 if stopping else 0,                 #Disengage DSG
     "EP1_AutoHold_aktiv": 1 if stopping else 0              #Disengage DSG
   }
