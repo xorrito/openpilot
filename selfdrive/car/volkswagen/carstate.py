@@ -5,6 +5,7 @@ from openpilot.selfdrive.car.interfaces import CarStateBase
 from opendbc.can.parser import CANParser
 from openpilot.selfdrive.car.volkswagen.values import DBC, CANBUS, PQ_CARS, NetworkLocation, TransmissionType, GearShifter, \
                                             CarControllerParams, VolkswagenFlags
+from openpilot.selfdrive.car.volkswagen.carcontroller import CarController as CC
 
 
 class CarState(CarStateBase):
@@ -250,7 +251,7 @@ class CarState(CarStateBase):
 
     # Update ACC radar status.
     self.acc_type = ext_cp.vl["ACC_System"]["ACS_Typ_ACC"]
-    ret.cruiseState.available = bool(pt_cp.vl["Motor_5"]["GRA_Hauptschalter"])
+    ret.cruiseState.available = 1 if (bool(pt_cp.vl["Motor_5"]["GRA_Hauptschalter"]) or CC.EPB_enable) else 0
     ret.cruiseState.enabled = pt_cp.vl["Motor_2"]["GRA_Status"] in (1, 2)
 
     # Update ACC setpoint. When the setpoint reads as 255, the driver has not
