@@ -103,7 +103,7 @@ def create_epb_control(packer, bus, apply_brake, epb_enabled, stopping):
     "EP1_Freigabe_Ver": 1 if epb_enabled else 0,            #Allow braking pressure to build.
     "EP1_Bremslicht": 1 if apply_brake != 0 else 0,         #Enable brake lights
     "EP1_HydrHalten": 1 if stopping else 0,                 #Disengage DSG
-    "EP1_AutoHold_aktiv": 1 if stopping else 0              #Disengage DSG
+    "EP1_AutoHold_aktiv": 1,                                #Disengage DSG
   }
 
   return packer.make_can_msg("EPB_1", bus, values)
