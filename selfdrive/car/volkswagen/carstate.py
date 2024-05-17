@@ -5,6 +5,7 @@ from openpilot.selfdrive.car.interfaces import CarStateBase
 from opendbc.can.parser import CANParser
 from openpilot.selfdrive.car.volkswagen.values import DBC, CANBUS, PQ_CARS, NetworkLocation, TransmissionType, GearShifter, \
                                             CarControllerParams, VolkswagenFlags
+from openpilot.selfdrive.car.volkswagen.carcontroller import CarController as CC
 
 
 class CarState(CarStateBase):
@@ -15,7 +16,7 @@ class CarState(CarStateBase):
     self.esp_hold_confirmation = False
     self.upscale_lead_car_signal = False
     self.eps_stock_values = False
-    self.EPB_enabled = 0
+    self.EPB_enabled = CC.EPB_enable
 
   def create_button_events(self, pt_cp, buttons):
     button_events = []
@@ -251,7 +252,6 @@ class CarState(CarStateBase):
 
     # Update ACC radar status.
     self.acc_type = ext_cp.vl["ACC_System"]["ACS_Typ_ACC"]
-    self.EPB_enabled = 1 if pt_cp.vl["EPB_1"]["EP1_Freigabe_Ver"] else 0
     ret.cruiseState.available = 1 if (bool(pt_cp.vl["Motor_5"]["GRA_Hauptschalter"]) or self.EPB_enabled) else 0
     ret.cruiseState.enabled = pt_cp.vl["Motor_2"]["GRA_Status"] in (1, 2)
 
