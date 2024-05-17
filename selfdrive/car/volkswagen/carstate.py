@@ -16,6 +16,7 @@ class CarState(CarStateBase):
     self.esp_hold_confirmation = False
     self.upscale_lead_car_signal = False
     self.eps_stock_values = False
+    self.EPB_enabled = 0
 
   def create_button_events(self, pt_cp, buttons):
     button_events = []
@@ -251,7 +252,8 @@ class CarState(CarStateBase):
 
     # Update ACC radar status.
     self.acc_type = ext_cp.vl["ACC_System"]["ACS_Typ_ACC"]
-    ret.cruiseState.available = 1 if (bool(pt_cp.vl["Motor_5"]["GRA_Hauptschalter"]) or CC.EPB_enable) else 0
+    self.EPB_enabled = 1 if pt_cp.vl["EPB_1"]["EP1_Freigabe_Ver"] else 0
+    ret.cruiseState.available = 1 if (bool(pt_cp.vl["Motor_5"]["GRA_Hauptschalter"]) or self.EPB_enabled) else 0
     ret.cruiseState.enabled = pt_cp.vl["Motor_2"]["GRA_Status"] in (1, 2)
 
     # Update ACC setpoint. When the setpoint reads as 255, the driver has not
