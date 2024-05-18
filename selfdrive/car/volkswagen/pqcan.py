@@ -91,7 +91,7 @@ def create_acc_accel_control(packer, bus, acc_type, acc_enabled, accel, acc_cont
 
   return commands
 
-def create_epb_control(packer, bus, apply_brake, epb_enabled, stopping):
+def create_epb_control(packer, bus, apply_brake, epb_enabled):
 
   values = {
     "EP1_Fehler_Sta": 0,
@@ -102,8 +102,8 @@ def create_epb_control(packer, bus, apply_brake, epb_enabled, stopping):
     "EP1_Verzoegerung": apply_brake,                        #Brake request in m/s2
     "EP1_Freigabe_Ver": 1 if epb_enabled else 0,            #Allow braking pressure to build.
     "EP1_Bremslicht": 1 if apply_brake != 0 else 0,         #Enable brake lights
-    "EP1_HydrHalten": 1 if stopping else 0,                 #Disengage DSG
-    "EP1_AutoHold_aktiv": 1,                                #Disengage DSG
+    "EP1_HydrHalten": 1 if epb_enabled else 0,              #Disengage DSG
+    "EP1_AutoHold_aktiv": 1,                                #Signal indicating EPB is available
   }
 
   return packer.make_can_msg("EPB_1", bus, values)
