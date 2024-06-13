@@ -1,4 +1,4 @@
-from openpilot.common.numpy_fast import clip
+from common.numpy_fast import clip
 
 def create_steering_control(packer, bus, apply_steer, lkas_enabled):
   values = {
