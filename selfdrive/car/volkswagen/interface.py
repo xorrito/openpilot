@@ -135,7 +135,7 @@ class CarInterface(CarInterfaceBase):
       ret.wheelbase = 2.80
       ret.minEnableSpeed = 0 * CV.KPH_TO_MS
       ret.minSteerSpeed = 1 * CV.KPH_TO_MS
-      ret.steerActuatorDelay = 0.10
+      ret.steerActuatorDelay = 0.12
       ret.lateralTuning.pid.kpBP = [0.0, 41.0]
       ret.lateralTuning.pid.kiBP = [0.0, 41.0]
       ret.lateralTuning.pid.kf = 0.000003
