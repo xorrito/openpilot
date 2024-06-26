@@ -74,11 +74,11 @@ class CarInterface(CarInterfaceBase):
     ret.steerLimitTimer = 0.4
     if ret.flags & VolkswagenFlags.PQ:
       if candidate == CAR.JETTA_SPORTWAGEN:
-        ret.steerActuatorDelay = 0.11
+        ret.steerActuatorDelay = 0.1
         ret.lateralTuning.pid.kpBP = [0.0]
         ret.lateralTuning.pid.kiBP = [0.0]
-        ret.lateralTuning.pid.kf = 0.00000435
-        ret.lateralTuning.pid.kpV = [0.0174]
+        ret.lateralTuning.pid.kf = 0.000004
+        ret.lateralTuning.pid.kpV = [0.015]
         ret.lateralTuning.pid.kiV = [0.600]
         CarInterfaceBase.configure_torque_tune(candidate, ret.lateralTuning)
       else:
