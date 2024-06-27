@@ -77,11 +77,11 @@ class CarInterface(CarInterfaceBase):
         ret.steerActuatorDelay = 0.1
         ret.lateralTuning.pid.kpBP = [0.0]
         ret.lateralTuning.pid.kiBP = [0.0]
-        ret.lateralTuning.pid.kf = 0.000003
+        ret.lateralTuning.pid.kf = 0.0000025
         ret.lateralTuning.pid.kpV = [0.008]
-        ret.lateralTuning.pid.kiV = [0.250]
-        ret.longitudinalTuning.kpV = [0.13]
-        ret.longitudinalTuning.kiV = [0.08]
+        ret.lateralTuning.pid.kiV = [0.200]
+        ret.longitudinalTuning.kpV = [0.10]
+        ret.longitudinalTuning.kiV = [0.10]
         CarInterfaceBase.configure_torque_tune(candidate, ret.lateralTuning)
       else:
         ret.steerActuatorDelay = 0.2
