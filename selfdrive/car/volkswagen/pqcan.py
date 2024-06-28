@@ -49,9 +49,8 @@ def create_acc_buttons_control(packer, bus, gra_stock_values, cancel=False, resu
 
   return packer.make_can_msg("GRA_Neu", bus, values)
 
-# TODO: Add overrun status, where long is engaged but being overridden by driver
-def acc_control_value(main_switch_on, acc_faulted, long_active):
-  if long_active:
+def acc_control_value(main_switch_on, acc_faulted, long_active, enabled, gasPressed, acc_control_last):
+  if long_active or (acc_control_last == 1 and gasPressed and enabled):
     acc_control = 1
   elif main_switch_on:
     acc_control = 2
@@ -60,12 +59,14 @@ def acc_control_value(main_switch_on, acc_faulted, long_active):
 
   return acc_control
 
-# TODO: Add overrun status, where long is engaged but being overridden by driver
-def acc_hud_status_value(main_switch_on, acc_faulted, long_active):
+def acc_hud_status_value(main_switch_on, acc_faulted, acc_control, gasPressed):
   if acc_faulted:
     hud_status = 6
-  elif long_active:
-    hud_status = 3
+  elif acc_control == 1:
+    if gasPressed:
+      hud_status = 4
+    else:
+      hud_status = 3
   elif main_switch_on:
     hud_status = 2
   else:
