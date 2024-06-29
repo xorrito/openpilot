@@ -257,7 +257,7 @@ bool rx_msg_safety_check(const CANPacket_t *to_push,
 
 void generic_rx_checks(bool stock_ecu_detected) {
   // exit controls on rising edge of gas press
-  if (gas_pressed && !gas_pressed_prev && !(alternative_experience & ALT_EXP_DISABLE_DISENGAGE_ON_GAS)) {
+  if (gas_pressed && !gas_pressed_prev && !(alternative_experience & ALT_EXP_DISABLE_DISENGAGE_ON_GAS) && !cruise_override_enabled) {
     controls_allowed = false;
   }
   gas_pressed_prev = gas_pressed;

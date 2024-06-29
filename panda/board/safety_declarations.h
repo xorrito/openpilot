@@ -228,6 +228,7 @@ int cruise_button_prev = 0;
 int cruise_main_prev = 0;
 bool safety_rx_checks_invalid = false;
 bool cruise_override = false;
+bool cruise_override_enabled = false;
 
 // for safety modes with torque steering control
 int desired_torque_last = 0;       // last desired steer torque
