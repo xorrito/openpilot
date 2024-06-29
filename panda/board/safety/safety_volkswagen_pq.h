@@ -125,7 +125,7 @@ static void volkswagen_pq_rx_hook(const CANPacket_t *to_push) {
     }
 
     if (volkswagen_longitudinal) {
-      cruise_override_enabled = true;
+      cruise_override = true;
       if (addr == MSG_MOTOR_5) {
         // ACC main switch on is a prerequisite to enter controls, exit controls immediately on main switch off
         // Signal: Motor_5.GRA_Hauptschalter
@@ -158,7 +158,6 @@ static void volkswagen_pq_rx_hook(const CANPacket_t *to_push) {
         // Signal: Motor_2.GRA_Status
         int acc_status = (GET_BYTE(to_push, 2) & 0xC0U) >> 6;
         bool cruise_engaged = (acc_status == 1) || (acc_status == 2);
-        cruise_override = (acc_status == 2);
         pcm_cruise_check(cruise_engaged);
       }
     }
