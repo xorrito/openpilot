@@ -157,6 +157,7 @@ static void volkswagen_pq_rx_hook(const CANPacket_t *to_push) {
         // Signal: Motor_2.GRA_Status
         int acc_status = (GET_BYTE(to_push, 2) & 0xC0U) >> 6;
         bool cruise_engaged = (acc_status == 1) || (acc_status == 2);
+        cruise_override = (acc_status == 2);
         pcm_cruise_check(cruise_engaged);
       }
     }
