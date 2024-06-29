@@ -19,7 +19,6 @@ class CarController(CarControllerBase):
     self.CCS = pqcan if CP.flags & VolkswagenFlags.PQ else mqbcan
     self.packer_pt = CANPacker(dbc_name)
 
-    self.acc_control_last = 0
     self.apply_steer_last = 0
     self.gra_acc_counter_last = None
     self.frame = 0
@@ -80,7 +79,6 @@ class CarController(CarControllerBase):
 
     if self.frame % self.CCP.ACC_CONTROL_STEP == 0 and self.CP.openpilotLongitudinalControl:
       acc_control = self.CCS.acc_control_value(CS.out.cruiseState.available, CS.out.accFaulted, CC.longActive, CC.cruiseControl.override)
-      self.acc_control_last = acc_control
       if frogpilot_variables.sport_plus:
         accel = clip(actuators.accel, self.CCP.ACCEL_MIN, self.CCP.ACCEL_MAX_PLUS) if CC.longActive else 0
       else:
