@@ -85,6 +85,19 @@ class CarController(CarControllerBase):
         accel = clip(actuators.accel, self.CCP.ACCEL_MIN, self.CCP.ACCEL_MAX) if CC.longActive else 0
       stopping = actuators.longControlState == LongCtrlState.stopping
       starting = actuators.longControlState == LongCtrlState.pid and (CS.esp_hold_confirmation or CS.out.vEgo < self.CP.vEgoStopping)
+
+      if CS.out.vEgo == 0 and CC.longActive: #try pulsing brake every 1s to prevent ABS fault?
+        pulseAccelEntry = +1
+        if pulseAccelEntry >= 50: # 1 second of standstill
+          pulseAccelCounter = +1
+          if pulseAccelCounter > 4:
+            pulseAccelEntry = 0
+            pulseAccelCounter = 0
+      else:
+        pulseAccelEntry = 0
+        pulseAccelCounter = 0
+
+      accel = accel if pulseAccelCounter == 0 else 0
       can_sends.extend(self.CCS.create_acc_accel_control(self.packer_pt, CANBUS.pt, CS.acc_type, accel,
                                                          acc_control, stopping, starting, CS.esp_hold_confirmation))
 
