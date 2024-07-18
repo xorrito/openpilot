@@ -90,4 +90,4 @@ class CarController(CarControllerBase):
 
     self.gra_acc_counter_last = CS.gra_stock_values["COUNTER"]
     self.frame += 1
-    return new_actuators, can_sends, self.eps_timer_soft_disable_alert
+    return can_sends
