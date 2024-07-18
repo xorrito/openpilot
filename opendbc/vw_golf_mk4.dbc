@@ -1151,7 +1151,7 @@ BO_ 978 Lenkhilfe_2: 7 XXX
  SG_ LH2_PLA_Err : 48|4@1+ (1,0) [0|15] "" XXX
  SG_ LH2_PLA_Abbr : 52|4@1+ (1,0) [0|15] "" XXX
 
-BO_ 980 PLA_1: 8 XXX
+BO_ 980 PLA_1: 4 XXX
  SG_ CHECKSUM : 0|8@1+ (1,0) [0|255] "" XXX
  SG_ COUNTER : 8|4@1+ (1,0) [0|15] "" XXX
  SG_ PL1_Status_EPS : 12|4@1 (1,0) [0|15] "" XXX
