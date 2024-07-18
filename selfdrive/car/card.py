@@ -119,7 +119,6 @@ class CarD:
 
     # carState
     cs_send = messaging.new_message('carState')
-    self.CS.canValid = True
     cs_send.valid = self.CS.canValid
     cs_send.carState = self.CS
     self.pm.send('carState', cs_send)
