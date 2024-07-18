@@ -146,5 +146,7 @@ class CarInterface(CarInterfaceBase):
     return ret, fp_ret
 
   def apply(self, c, now_nanos, frogpilot_variables):
-    can_sends, self.eps_timer_soft_disable_alert = self.CC.update(c, self.CS, self.ext_bus, now_nanos, frogpilot_variables)
-    return can_sends
+    return self.CC.update(c, self.CS, self.ext_bus, now_nanos, frogpilot_variables)
+
+  def apply(self, c, now_nanos, frogpilot_variables):
+    return self.CC.update(c, self.CS, now_nanos, frogpilot_variables)
