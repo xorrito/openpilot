@@ -147,6 +147,3 @@ class CarInterface(CarInterfaceBase):
 
   def apply(self, c, now_nanos, frogpilot_variables):
     return self.CC.update(c, self.CS, self.ext_bus, now_nanos, frogpilot_variables)
-
-  def apply(self, c, now_nanos, frogpilot_variables):
-    return self.CC.update(c, self.CS, now_nanos, frogpilot_variables)
