@@ -36,10 +36,12 @@ const LongitudinalLimits VOLKSWAGEN_PQ_LONG_LIMITS_SPORT = {
 #define MSG_MOTOR_5             0x480   // RX from ECU, for ACC main switch state
 #define MSG_ACC_GRA_ANZEIGE     0x56A   // TX by OP, ACC HUD
 #define MSG_LDW_1               0x5BE   // TX by OP, Lane line recognition and text alerts
+#define MSG_PLA_1               0x3D4   // TX by OP, experimentation signal only
 
 // Transmit of GRA_Neu is allowed on bus 0 and 2 to keep compatibility with gateway and camera integration
 const CanMsg VOLKSWAGEN_PQ_STOCK_TX_MSGS[] = {{MSG_HCA_1, 0, 5}, {MSG_LDW_1, 0, 8},
-                                              {MSG_GRA_NEU, 0, 4}, {MSG_GRA_NEU, 2, 4}};
+                                              {MSG_GRA_NEU, 0, 4}, {MSG_GRA_NEU, 2, 4},
+                                              {MSG_PLA_1, 1, 8}};
 const CanMsg VOLKSWAGEN_PQ_LONG_TX_MSGS[] =  {{MSG_HCA_1, 0, 5}, {MSG_LDW_1, 0, 8},
                                               {MSG_ACC_SYSTEM, 0, 8}, {MSG_ACC_GRA_ANZEIGE, 0, 8}};
 

@@ -6,7 +6,7 @@ from cereal import car
 from panda.python import uds
 from opendbc.can.can_define import CANDefine
 from openpilot.common.conversions import Conversions as CV
-from openpilot.selfdrive.car import dbc_dict, CarSpecs, DbcDict, PlatformConfig, Platforms
+from openpilot.selfdrive.car import dbc_dict, AngleRateLimit, CarSpecs, DbcDict, PlatformConfig, Platforms
 from openpilot.selfdrive.car.docs_definitions import CarFootnote, CarHarness, CarDocs, CarParts, Column, \
                                            Device
 from openpilot.selfdrive.car.fw_query_definitions import FwQueryConfig, Request, p16
@@ -37,6 +37,9 @@ class CarControllerParams:
   ACCEL_MAX = 2.0                          # 2.0 m/s max acceleration
   ACCEL_MAX_PLUS = 4.0                     # 4.0 m/s max acceleration
   ACCEL_MIN = -3.5                         # 3.5 m/s max deceleration
+
+  ANGLE_RATE_LIMIT_UP = 500      # arbitrary test value, we WANT rack to fault.
+  ANGLE_RATE_LIMIT_DOWN = 500    # arbitrary test value, we WANT rack to fault.
 
   def __init__(self, CP):
     can_define = CANDefine(DBC[CP.carFingerprint]["pt"])
@@ -107,6 +110,7 @@ class CarControllerParams:
 
 class CANBUS:
   pt = 0
+  br = 1
   cam = 2
 
 
