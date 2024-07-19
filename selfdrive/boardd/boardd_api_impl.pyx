@@ -18,9 +18,6 @@ def can_list_to_can_capnp(can_msgs, msgtype='can', valid=True):
   cdef vector[can_frame] can_list
   can_list.reserve(len(can_msgs))
 
-  with open('/data/debugg.txt','w') as file:
-    file.write(f"{can_msgs}\n")
-
   cdef can_frame f
   for can_msg in can_msgs:
     f.address = can_msg[0]
