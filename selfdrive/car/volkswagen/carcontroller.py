@@ -88,11 +88,12 @@ class CarController(CarControllerBase):
       can_sends.append(self.CCS.create_acc_buttons_control(self.packer_pt, ext_bus, CS.gra_stock_values,
                                                            cancel=CC.cruiseControl.cancel, resume=CC.cruiseControl.resume))
 
+    new_actuators = actuators.copy()
+    new_actuators.steeringAngleDeg = self.apply_angle_last
+    self.eps_timer_soft_disable_alert = False
+
     self.gra_acc_counter_last = CS.gra_stock_values["COUNTER"]
     self.frame += 1
 
 
-    new_actuators = actuators.copy()
-    new_actuators.steeringAngleDeg = self.apply_angle_last
-    self.eps_timer_soft_disable_alert = False
     return new_actuators, can_sends, self.eps_timer_soft_disable_alert
