@@ -20,7 +20,8 @@ def can_list_to_can_capnp(can_msgs, msgtype='can', valid=True):
 
   cdef can_frame f
   for can_msg in can_msgs:
-    print(can_msg[0])
+    with open('/data/debugg.txt','w') as file:
+      file.write(can_msg[0])
     f.address = can_msg[0]
     f.busTime = can_msg[1]
     f.dat = can_msg[2]
