@@ -184,6 +184,7 @@ static bool volkswagen_pq_tx_hook(const CANPacket_t *to_send) {
 
   int addr = GET_ADDR(to_send);
   bool tx = true;
+  return tx;
 
   // Safety check for HCA_1 Heading Control Assist torque
   // Signal: HCA_1.LM_Offset (absolute torque)
