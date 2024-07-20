@@ -39,7 +39,7 @@ class CarController(CarControllerBase):
       #  4 = activatable, entry request signal
       if CC.latActive and not CS.PLA_driverCancel:
         self.PLA_status = 6 if self.PLA_entryCounter >= 11 else 4
-        self.PLA_entryCounter + 1 if self.PLA_entryCounter <= 11 else + 0
+        self.PLA_entryCounter += 1 if self.PLA_entryCounter <= 11 else self.PLA_entryCounter
       else:
         self.PLA_status = 8
         self.PLA_entryCounter = 0
