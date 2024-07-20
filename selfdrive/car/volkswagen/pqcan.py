@@ -1,8 +1,8 @@
-def create_steering_control(packer, bus, apply_angle, steer_enabled):
+def create_steering_control(packer, bus, apply_angle, PLA_status):
   values = {
     "PL1_ArcAngleReq": abs(apply_angle),
     "PL1_AngleReqSign": 1 if apply_angle < 0 else 0,
-    "PL1_Status_EPS": 6 if steer_enabled else 8,
+    "PL1_Status_EPS": PLA_status,
   }
 
   return packer.make_can_msg("PLA_1", bus, values)
