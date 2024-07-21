@@ -41,10 +41,10 @@ const LongitudinalLimits VOLKSWAGEN_PQ_LONG_LIMITS_SPORT = {
 // Transmit of GRA_Neu is allowed on bus 0 and 2 to keep compatibility with gateway and camera integration
 const CanMsg VOLKSWAGEN_PQ_STOCK_TX_MSGS[] = {{MSG_HCA_1, 0, 5}, {MSG_LDW_1, 0, 8},
                                               {MSG_GRA_NEU, 0, 4}, {MSG_GRA_NEU, 2, 4},
-                                              {MSG_PLA_1, 1, 4}};
+                                              {MSG_PLA_1, 1, 8}};
 const CanMsg VOLKSWAGEN_PQ_LONG_TX_MSGS[] =  {{MSG_HCA_1, 0, 5}, {MSG_LDW_1, 0, 8},
                                               {MSG_ACC_SYSTEM, 0, 8}, {MSG_ACC_GRA_ANZEIGE, 0, 8},
-                                              {MSG_PLA_1, 1, 4}};
+                                              {MSG_PLA_1, 1, 8}};
 
 RxCheck volkswagen_pq_rx_checks[] = {
   {.msg = {{MSG_LENKHILFE_3, 0, 6, .check_checksum = true, .max_counter = 15U, .frequency = 100U}, { 0 }, { 0 }}},
