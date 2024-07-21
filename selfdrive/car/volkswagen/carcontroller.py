@@ -23,6 +23,7 @@ class CarController(CarControllerBase):
     self.gra_acc_counter_last = None
     self.frame = 0
     self.PLA_status = 0
+    self.PLA_statusLast = 0
     self.PLA_entryCounter = 0
     self.CSsteeringAngleDegLast = 0
 
@@ -49,8 +50,9 @@ class CarController(CarControllerBase):
         if CC.latActive and self.PLA_status == 6 else self.CSsteeringAngleDegLast
 
       self.apply_angle_last = apply_angle
+      self.PLA_statusLast = self.PLA_status
       self.CSsteeringAngleDegLast = CS.out.steeringAngleDeg
-      can_sends.append(self.CCS.create_steering_control(self.packer_pt, CANBUS.br, apply_angle, self.PLA_status))
+      can_sends.append(self.CCS.create_steering_control(self.packer_pt, CANBUS.br, apply_angle, self.PLA_status, self.PLA_statusLast))
 
     # **** Acceleration Controls ******************************************** #
 
