@@ -39,6 +39,7 @@ class CarController(CarControllerBase):
       #  8 = standby
       #  6 = active
       #  4 = activatable, entry request signal
+      self.PLA_statusLast = self.PLA_status
       if CC.latActive and not CS.PLA_driverCancel:
         self.PLA_status = 6 if self.PLA_entryCounter >= 11 else 4
         self.PLA_entryCounter += 1 if self.PLA_entryCounter <= 11 else self.PLA_entryCounter
@@ -50,7 +51,6 @@ class CarController(CarControllerBase):
         if CC.latActive and self.PLA_status == 6 else self.CSsteeringAngleDegLast
 
       self.apply_angle_last = apply_angle
-      self.PLA_statusLast = self.PLA_status
       self.CSsteeringAngleDegLast = CS.out.steeringAngleDeg
       can_sends.append(self.CCS.create_steering_control(self.packer_pt, CANBUS.br, apply_angle, self.PLA_status, self.PLA_statusLast))
 
