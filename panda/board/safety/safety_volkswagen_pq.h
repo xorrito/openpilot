@@ -82,18 +82,9 @@ static uint32_t volkswagen_pq_compute_checksum(const CANPacket_t *to_push) {
   int checksum_byte = (addr == MSG_MOTOR_5) ? 7 : 0;
 
   // Simple XOR over the payload, except for the byte where the checksum lives.
-  if (addr == MSG_PLA_1) {
-    len = 3;
-    for (int i = 0; i < len; i++) {
-      if (i != checksum_byte) {
-        checksum ^= (uint8_t)GET_BYTE(to_push, i);
-      }
-    }
-  } else {
-    for (int i = 0; i < len; i++) {
-      if (i != checksum_byte) {
-        checksum ^= (uint8_t)GET_BYTE(to_push, i);
-      }
+  for (int i = 0; i < len; i++) {
+    if (i != checksum_byte) {
+      checksum ^= (uint8_t)GET_BYTE(to_push, i);
     }
   }
 
