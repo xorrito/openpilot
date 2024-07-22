@@ -25,7 +25,6 @@ class CarController(CarControllerBase):
     self.PLA_status = 0
     self.PLA_entryCounter = 0
     self.CSsteeringAngleDegLast = 0
-    self.PLAidx = 0
 
   def update(self, CC, CS, ext_bus, now_nanos, frogpilot_variables):
     actuators = CC.actuators
@@ -51,8 +50,7 @@ class CarController(CarControllerBase):
 
       self.apply_angle_last = apply_angle
       self.CSsteeringAngleDegLast = CS.out.steeringAngleDeg
-      self.PLAidx = (self.frame / self.CCP.STEER_STEP) % 16
-      can_sends.append(self.CCS.create_steering_control(self.packer_pt, CANBUS.br, self.PLAidx, apply_angle, self.PLA_status))
+      can_sends.append(self.CCS.create_steering_control(self.packer_pt, CANBUS.br, apply_angle, self.PLA_status))
 
     # **** Acceleration Controls ******************************************** #
 

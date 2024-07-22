@@ -1,6 +1,5 @@
-def create_steering_control(packer, bus, idx, apply_angle, PLA_status):
+def create_steering_control(packer, bus, apply_angle, PLA_status):
   values = {
-    "PL1_Zaehler": idx,
     "PL1_Status_EPS": PLA_status,
     "PL1_ArcAngleReq": abs(apply_angle),
     "PL1_AngleReqSign": 1 if apply_angle < 0 else 0,
@@ -9,7 +8,6 @@ def create_steering_control(packer, bus, idx, apply_angle, PLA_status):
   }
 
   dat = packer.make_can_msg("PLA_1", bus, values)[2]
-  values["PL1_Checksumme"] = dat[1] ^ dat[2] ^ dat[3]
   return packer.make_can_msg("PLA_1", bus, values)
 
 
