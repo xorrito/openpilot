@@ -231,7 +231,6 @@ static bool volkswagen_pq_tx_hook(const CANPacket_t *to_send) {
     }
   }
 
-  tx = true;
   return tx;
 }
 

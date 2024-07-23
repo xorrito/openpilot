@@ -7,7 +7,6 @@ def create_steering_control(packer, bus, apply_angle, PLA_status):
     "PL1_Bremsmoment": 0,
   }
 
-  dat = packer.make_can_msg("PLA_1", bus, values)[2]
   return packer.make_can_msg("PLA_1", bus, values)
 
 
