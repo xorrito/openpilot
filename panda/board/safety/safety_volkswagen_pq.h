@@ -170,10 +170,7 @@ static void volkswagen_pq_rx_hook(const CANPacket_t *to_push) {
       gas_pressed = (GET_BYTE(to_push, 2));
     }
 
-    // Signal: Motor_2.Bremslichtschalter
-    if (addr == MSG_MOTOR_2) {
-      brake_pressed = (GET_BYTE(to_push, 2) & 0x1U);
-    }
+    brake_pressed = false;
 
     generic_rx_checks((addr == MSG_HCA_1));
   }
