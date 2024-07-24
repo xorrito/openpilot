@@ -50,7 +50,7 @@ class CarController(CarControllerBase):
 
       self.apply_angle_last = apply_angle
       self.CSsteeringAngleDegLast = CS.out.steeringAngleDeg
-      can_sends.append(self.CCS.create_steering_control(self.packer_pt, CANBUS.br, apply_angle, self.PLA_status))
+      can_sends.append(self.CCS.create_steering_control(self.packer_pt, CANBUS.br, apply_angle, self.PLA_status, CS.LH_3_Sign))
 
     # **** Acceleration Controls ******************************************** #
 
