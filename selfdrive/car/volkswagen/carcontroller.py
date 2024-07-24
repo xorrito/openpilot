@@ -23,6 +23,7 @@ class CarController(CarControllerBase):
     self.gra_acc_counter_last = None
     self.frame = 0
     self.PLA_status = 0
+    self.PLA_ESP_status = 0
     self.PLA_entryCounter = 0
     self.CSsteeringAngleDegLast = 0
 
@@ -40,9 +41,11 @@ class CarController(CarControllerBase):
       #  4 = activatable, entry request signal
       if CC.latActive:
         self.PLA_status = 6 if self.PLA_entryCounter >= 11 else 4
-        self.PLA_entryCounter += 1 if self.PLA_entryCounter <= 11 else self.PLA_entryCounter
+        self.PLA_ESP_status = 6 if self.PLA_entryCounter >= 32 else 4
+        self.PLA_entryCounter += 1 if self.PLA_entryCounter <= 32 else self.PLA_entryCounter
       else:
         self.PLA_status = 8
+        self.PLA_ESP_status = 8
         self.PLA_entryCounter = 0
 
       apply_angle = apply_std_steer_angle_limits(actuators.steeringAngleDeg, self.apply_angle_last, CS.out.vEgo, CarControllerParams) \
@@ -50,7 +53,7 @@ class CarController(CarControllerBase):
 
       self.apply_angle_last = apply_angle
       self.CSsteeringAngleDegLast = CS.out.steeringAngleDeg
-      can_sends.append(self.CCS.create_steering_control(self.packer_pt, CANBUS.br, apply_angle, self.PLA_status, CS.LH_3_Sign))
+      can_sends.append(self.CCS.create_steering_control(self.packer_pt, CANBUS.br, apply_angle, self.PLA_status, self.PLA_ESP_status, CS.LH_3_Sign))
 
     # **** Acceleration Controls ******************************************** #
 
