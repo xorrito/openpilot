@@ -37,14 +37,15 @@ const LongitudinalLimits VOLKSWAGEN_PQ_LONG_LIMITS_SPORT = {
 #define MSG_ACC_GRA_ANZEIGE     0x56A   // TX by OP, ACC HUD
 #define MSG_LDW_1               0x5BE   // TX by OP, Lane line recognition and text alerts
 #define MSG_PLA_1               0x3D4   // TX by OP, experimentation signal only
+#define MSG_GK_1                0x38A   // TX by OP, spamming reverse light ON. Testing EPS PLA entry not in R
 
 // Transmit of GRA_Neu is allowed on bus 0 and 2 to keep compatibility with gateway and camera integration
 const CanMsg VOLKSWAGEN_PQ_STOCK_TX_MSGS[] = {{MSG_HCA_1, 0, 5}, {MSG_LDW_1, 0, 8},
                                               {MSG_GRA_NEU, 0, 4}, {MSG_GRA_NEU, 2, 4},
-                                              {MSG_PLA_1, 1, 8}};
+                                              {MSG_PLA_1, 1, 8}, {MSG_GK_1, 1, 8}};
 const CanMsg VOLKSWAGEN_PQ_LONG_TX_MSGS[] =  {{MSG_HCA_1, 0, 5}, {MSG_LDW_1, 0, 8},
                                               {MSG_ACC_SYSTEM, 0, 8}, {MSG_ACC_GRA_ANZEIGE, 0, 8},
-                                              {MSG_PLA_1, 1, 8}};
+                                              {MSG_PLA_1, 1, 8}, {MSG_GK_1, 1, 8}};
 
 RxCheck volkswagen_pq_rx_checks[] = {
   {.msg = {{MSG_LENKHILFE_3, 0, 6, .check_checksum = true, .max_counter = 15U, .frequency = 100U}, { 0 }, { 0 }}},

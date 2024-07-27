@@ -184,6 +184,8 @@ class CarState(CarStateBase):
     ret.steerFaultTemporary = True if pt_cp.vl["Lenkhilfe_2"]["LH2_PLA_Abbr"] == 2 else False
     self.LH_3_Sign = pt_cp.vl["Lenkhilfe_3"]["LH3_BLWSign"]
 
+    self.Gate_Komf_stock = pt_cp.vl["Gate_Komf_1"]
+
     # Update gas, brakes, and gearshift.
     ret.gas = pt_cp.vl["Motor_3"]["Fahrpedal_Rohsignal"] / 100.0
     ret.gasPressed = ret.gas > 0

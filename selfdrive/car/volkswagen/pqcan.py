@@ -49,6 +49,14 @@ def create_acc_buttons_control(packer, bus, gra_stock_values, cancel=False, resu
 
   return packer.make_can_msg("GRA_Neu", bus, values)
 
+def create_gk_spam(packer, bus, gk_stock):
+  values = gk_stock
+  values.update({
+    "GK1_Rueckfahr": 1,
+  })
+
+  return packer.make_can_msg("Gate_Komf_1", bus, values)
+
 def acc_control_value(main_switch_on, acc_faulted, long_active, cruiseOverride):
   if long_active or cruiseOverride:
     acc_control = 1
