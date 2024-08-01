@@ -73,7 +73,7 @@ class CarController(CarControllerBase):
 
     # **** HUD Controls ***************************************************** #
 
-    if self.frame % self.CCP.GK_STEP == 0:
+    if self.frame % self.CCP.LDW_STEP == 0:
       hud_alert = 0
       if hud_control.visualAlert in (VisualAlert.steerRequired, VisualAlert.ldw):
         hud_alert = self.CCP.LDW_MESSAGES["laneAssistTakeOver"]
@@ -98,7 +98,7 @@ class CarController(CarControllerBase):
                                                            cancel=CC.cruiseControl.cancel, resume=CC.cruiseControl.resume))
 
     # **** Gate_Komf Spammer ************************************************ #
-    if self.frame % self.CCP.LDW_STEP != 0:
+    if self.frame % self.CCP.GK_STEP != 0:
       can_sends.append(self.CCS.create_gk_spam(self.packer_pt, CANBUS.br, CS.Gate_Komf_stock))
 
     new_actuators = actuators.copy()
