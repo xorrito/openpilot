@@ -22,7 +22,6 @@ class CarController(CarControllerBase):
     self.apply_angle_last = 0
     self.gra_acc_counter_last = None
     self.frame = 0
-    self.frameLast = 0
     self.PLA_status = 0
     self.PLA_ESP_status = 0
     self.PLA_entryCounter = 0
@@ -99,8 +98,7 @@ class CarController(CarControllerBase):
                                                            cancel=CC.cruiseControl.cancel, resume=CC.cruiseControl.resume))
 
     # **** Gate_Komf Spammer ************************************************ #
-    if self.frameLast % self.CCP.GK_STEP != 0:
-      can_sends.append(self.CCS.create_gk_spam(self.packer_pt, CANBUS.br, CS.Gate_Komf_stock))
+    can_sends.append(self.CCS.create_gk_spam(self.packer_pt, CANBUS.br, CS.Gate_Komf_stock))
 
     new_actuators = actuators.copy()
     new_actuators.steeringAngleDeg = self.apply_angle_last
@@ -109,7 +107,6 @@ class CarController(CarControllerBase):
     CS.Gate_Komf_stock = 0
     self.gra_acc_counter_last = CS.gra_stock_values["COUNTER"]
     self.frameLast = self.frame
-    self.frame += 1
 
 
     return new_actuators, can_sends, self.eps_timer_soft_disable_alert
