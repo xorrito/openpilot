@@ -44,6 +44,8 @@ class CarController(CarControllerBase):
         self.PLA_status = 6 if self.PLA_entryCounter >= 11 else 4
         self.PLA_ESP_status = 6 if self.PLA_entryCounter >= 32 else 4
         self.PLA_entryCounter += 1 if self.PLA_entryCounter <= 32 else self.PLA_entryCounter
+        if CS.LH2_steeringState != 64 and self.PLA_entryCounter >= 30:
+          self.PLA_entryCounter = 0
       else:
         self.PLA_status = 8
         self.PLA_ESP_status = 8
@@ -56,6 +58,11 @@ class CarController(CarControllerBase):
       self.CSsteeringAngleDegLast = CS.out.steeringAngleDeg
       can_sends.append(self.CCS.create_steering_control(self.packer_pt, CANBUS.br, apply_angle, self.PLA_status, self.PLA_ESP_status, self.CSLH3_SignLast))
       self.CSLH3_SignLast = CS.LH_3_Sign
+
+    # **** Gate_Komf Spammer ************************************************ #
+    if self.PLA_entryCounter <= 30 and CC.latActive:
+      can_sends.append(self.CCS.create_gk_spam(self.packer_pt, CANBUS.br, CS.Gate_Komf_stock))
+
 
     # **** Acceleration Controls ******************************************** #
 
@@ -97,8 +104,6 @@ class CarController(CarControllerBase):
       can_sends.append(self.CCS.create_acc_buttons_control(self.packer_pt, ext_bus, CS.gra_stock_values,
                                                            cancel=CC.cruiseControl.cancel, resume=CC.cruiseControl.resume))
 
-    # **** Gate_Komf Spammer ************************************************ #
-    can_sends.append(self.CCS.create_gk_spam(self.packer_pt, CANBUS.br, CS.Gate_Komf_stock))
 
     new_actuators = actuators.copy()
     new_actuators.steeringAngleDeg = self.apply_angle_last
