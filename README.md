@@ -1,4 +1,2 @@
-[![](https://i.imgur.com/UelUjKAh.png)](#)
-
-This fork is mostly just my personal work to get my car running.
-Should you choose to use it, please do your own due diligence. You can message me on discord: dkiiv
+https://gist.github.com/myusuf3/7f645819ded92bda6677
+https://stackoverflow.com/questions/5181845/git-push-existing-repo-to-a-new-and-different-remote-repo-server
