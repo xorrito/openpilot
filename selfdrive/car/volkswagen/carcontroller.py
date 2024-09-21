@@ -33,7 +33,7 @@ class CarController(CarControllerBase):
     self.deviationBP = [-0.1, 0., 0.5]         # accel        (m/s)
     self.deviationV = [0., 0.07, 0.01]         # comfort-band (m/s squared)
     self.rateLimitBP = [-1.0, -0.75, 0., 1.]   # accel        (m/s)
-    self.ratelimitV = [3.00, 1., 0.05, 0.50]   # jerk-limits  (m/s squared)
+    self.ratelimitV = [3.0, 0.04, 0.02, 0.04]   # jerk-limits  (m/s squared)
     self.longDeviation = 0
     self.longRateLimit = 0
 
