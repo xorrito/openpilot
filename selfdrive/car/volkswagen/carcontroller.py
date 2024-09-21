@@ -152,7 +152,7 @@ class CarController(CarControllerBase):
       starting = actuators.longControlState == LongCtrlState.pid and (CS.esp_hold_confirmation or CS.out.vEgo < self.CP.vEgoStopping)
       self.longDeviation = interp(accel, self.deviationBP, self.deviationV)
       self.longRateLimit = interp(accel, self.rateLimitBP, self.ratelimitV)
-      clip(self.longDeviation, self.deviationV[0], self.deviationV[2])
+      clip(self.longDeviation, self.deviationV[0], self.deviationV[1])
       clip(self.longRateLimit, self.ratelimitV[2], self.ratelimitV[0])
 
       can_sends.extend(self.CCS.create_acc_accel_control(self.packer_pt, CANBUS.pt, CS.acc_type, accel,
