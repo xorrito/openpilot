@@ -1,7 +1,7 @@
 from cereal import car
 import cereal.messaging as messaging
 from opendbc.can.packer import CANPacker
-from openpilot.common.numpy_fast import clip
+from openpilot.common.numpy_fast import clip, interp
 from openpilot.common.conversions import Conversions as CV
 from openpilot.common.params import Params
 from openpilot.selfdrive.car import DT_CTRL, apply_driver_steer_torque_limits
@@ -29,6 +29,13 @@ class CarController(CarControllerBase):
     self.hca_frame_timer_running = 0
     self.hca_frame_same_torque = 0
     self.last_button_frame = 0
+
+    self.deviationBP = [-0.2, 0., 0.5]
+    self.deviationV = [0., 0.15, 0.05]
+    self.rateLimitBP = [-1.70, 0., 1.]
+    self.ratelimitV = [3.00, 0.5, 0.5]
+    self.longDeviation = 0
+    self.longRateLimit = 0
 
     self.sm = messaging.SubMaster(['longitudinalPlanSP'])
     self.param_s = Params()
@@ -143,8 +150,14 @@ class CarController(CarControllerBase):
       accel = clip(actuators.accel, self.CCP.ACCEL_MIN, self.CCP.ACCEL_MAX) if CC.longActive else 0
       stopping = actuators.longControlState == LongCtrlState.stopping
       starting = actuators.longControlState == LongCtrlState.pid and (CS.esp_hold_confirmation or CS.out.vEgo < self.CP.vEgoStopping)
+      self.longDeviation = interp(accel, self.deviationBP, self.deviationV)
+      self.longRateLimit = interp(accel, self.rateLimitBP, self.ratelimitV)
+      clip(self.longDeviation, self.deviationV[0], self.deviationV[2])
+      clip(self.longRateLimit, self.ratelimitV[2], self.ratelimitV[0])
+
       can_sends.extend(self.CCS.create_acc_accel_control(self.packer_pt, CANBUS.pt, CS.acc_type, accel,
-                                                         acc_control, stopping, starting, CS.esp_hold_confirmation))
+                                                         acc_control, stopping, starting, CS.esp_hold_confirmation,
+                                                         self.longDeviation, self.longRateLimit))
 
     # **** HUD Controls ***************************************************** #
 
