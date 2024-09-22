@@ -1,6 +1,5 @@
 from cereal import car
 import cereal.messaging as messaging
-import numpy as np
 from opendbc.can.packer import CANPacker
 from openpilot.common.numpy_fast import clip, interp
 from openpilot.common.conversions import Conversions as CV
@@ -10,7 +9,6 @@ from openpilot.selfdrive.car.interfaces import CarControllerBase
 from openpilot.selfdrive.car.volkswagen import mqbcan, pqcan
 from openpilot.selfdrive.car.volkswagen.values import CANBUS, CarControllerParams, VolkswagenFlags
 from openpilot.selfdrive.controls.lib.drive_helpers import VOLKSWAGEN_V_CRUISE_MIN
-from openpilot.common.simple_kalman import KF1D, get_kalman_gain
 
 VisualAlert = car.CarControl.HUDControl.VisualAlert
 LongCtrlState = car.CarControl.Actuators.LongControlState
@@ -32,21 +30,10 @@ class CarController(CarControllerBase):
     self.hca_frame_same_torque = 0
     self.last_button_frame = 0
     self.accel_last = 0
-    self.smoothedAccelRate = 0
 
-    # Define parameters for Kalman Filter
-    dt = 0.02  # Time step (50hz)
-    Q = [[0.5, 0.0], [0.0, 0.5]]
-    R = 10
-    A = [[1.0, dt], [0.0, 1.0]]
-    C = [[1.0, 0.0]]
-    x0=[[0.0], [0.0]]
-    K = get_kalman_gain(dt, np.array(A), np.array(C), np.array(Q), R)
-    self.kf = KF1D(x0=x0, A=A, C=C[0], K=K)
-
-    self.deviationBP = [-3., -0.25, 0., 0.25, 3.]                  # accel        (m/s squared)
-    self.deviationV = [0., 0.01, 0.03, 0.01, 0.00]                 # comfort-band (m/s squared)
-    self.rateLimitBP = [-5., -1.75, -0.25, 0., 0.25, 1.75, 5.]     # accel        (m/s squared)
+    self.deviationBP = [-1.25, -0.25, 0., 0.25, 1.25]              # accel        (m/s squared)
+    self.deviationV = [0., 0.075, 0.15, 0.075, 0.]                 # comfort-band (m/s squared)
+    self.rateLimitBP = [-3., -1.75, -0.25, 0., 0.25, 1.75, 3.]     # accel        (m/s squared)
     self.ratelimitV = [3., 2.50, 0.50, 0.20, 0.50, 1.70, 3.]       # jerk-limits  (m/s squared)
     self.longDeviation = 0
     self.longRateLimit = 0
@@ -164,9 +151,8 @@ class CarController(CarControllerBase):
       accel = clip(actuators.accel, self.CCP.ACCEL_MIN, self.CCP.ACCEL_MAX) if CC.longActive else 0
       stopping = actuators.longControlState == LongCtrlState.stopping
       starting = actuators.longControlState == LongCtrlState.pid and (CS.esp_hold_confirmation or CS.out.vEgo < self.CP.vEgoStopping)
-      self.smoothedAccelRate = self.kf.update(((accel - self.accel_last)*50))
-      self.longDeviation = interp(self.smoothedAccelRate[0], self.deviationBP, self.deviationV)
-      self.longRateLimit = interp(self.smoothedAccelRate[0], self.rateLimitBP, self.ratelimitV)
+      self.longDeviation = interp(((accel - self.accel_last)*50), self.deviationBP, self.deviationV)
+      self.longRateLimit = interp(((accel - self.accel_last)*50), self.rateLimitBP, self.ratelimitV)
       clip(self.longDeviation, self.deviationV[0], self.deviationV[2])
       clip(self.longRateLimit, self.ratelimitV[3], self.ratelimitV[0])
       self.accel_last = accel
