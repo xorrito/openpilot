@@ -164,9 +164,9 @@ class CarController(CarControllerBase):
       accel = clip(actuators.accel, self.CCP.ACCEL_MIN, self.CCP.ACCEL_MAX) if CC.longActive else 0
       stopping = actuators.longControlState == LongCtrlState.stopping
       starting = actuators.longControlState == LongCtrlState.pid and (CS.esp_hold_confirmation or CS.out.vEgo < self.CP.vEgoStopping)
-      self.smoothedAccelRate = float(self.kf.update(((accel - self.accel_last)*50)))
-      self.longDeviation = interp(self.smoothedAccelRate, self.deviationBP, self.deviationV)
-      self.longRateLimit = interp(self.smoothedAccelRate, self.rateLimitBP, self.ratelimitV)
+      self.smoothedAccelRate = self.kf.update(((accel - self.accel_last)*50))
+      self.longDeviation = interp(self.smoothedAccelRate[0], self.deviationBP, self.deviationV)
+      self.longRateLimit = interp(self.smoothedAccelRate[0], self.rateLimitBP, self.ratelimitV)
       clip(self.longDeviation, self.deviationV[0], self.deviationV[2])
       clip(self.longRateLimit, self.ratelimitV[3], self.ratelimitV[0])
       self.accel_last = accel
