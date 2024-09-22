@@ -29,11 +29,12 @@ class CarController(CarControllerBase):
     self.hca_frame_timer_running = 0
     self.hca_frame_same_torque = 0
     self.last_button_frame = 0
+    self.accel_last = 0
 
-    self.deviationBP = [-0.1, 0., 0.5]         # accel        (m/s)
-    self.deviationV = [0., 0.07, 0.01]         # comfort-band (m/s squared)
-    self.rateLimitBP = [-1.0, -0.75, 0., 1.]   # accel        (m/s)
-    self.ratelimitV = [3.0, 0.04, 0.02, 0.04]   # jerk-limits  (m/s squared)
+    self.deviationBP = [-3., -0.25, 0., 0.25, 3.]              # accel        (m/s squared)
+    self.deviationV = [0., 0.01, 0.03, 0.01, 0.00]             # comfort-band (m/s squared)
+    self.rateLimitBP = [-5., -3., -0.25, 0., 0.25, 3., 5.]     # accel        (m/s squared)
+    self.ratelimitV = [3., 1.80, 0.15, 0.02, 0.15, 1.80, 3.]   # jerk-limits  (m/s squared)
     self.longDeviation = 0
     self.longRateLimit = 0
 
@@ -150,10 +151,11 @@ class CarController(CarControllerBase):
       accel = clip(actuators.accel, self.CCP.ACCEL_MIN, self.CCP.ACCEL_MAX) if CC.longActive else 0
       stopping = actuators.longControlState == LongCtrlState.stopping
       starting = actuators.longControlState == LongCtrlState.pid and (CS.esp_hold_confirmation or CS.out.vEgo < self.CP.vEgoStopping)
-      self.longDeviation = interp(accel, self.deviationBP, self.deviationV)
-      self.longRateLimit = interp(accel, self.rateLimitBP, self.ratelimitV)
-      clip(self.longDeviation, self.deviationV[0], self.deviationV[1])
-      clip(self.longRateLimit, self.ratelimitV[2], self.ratelimitV[0])
+      self.longDeviation = interp(((accel - self.accel_last)*50), self.deviationBP, self.deviationV)
+      self.longRateLimit = interp(((accel - self.accel_last)*50), self.rateLimitBP, self.ratelimitV)
+      clip(self.longDeviation, self.deviationV[0], self.deviationV[2])
+      clip(self.longRateLimit, self.ratelimitV[3], self.ratelimitV[0])
+      self.accel_last = accel
 
       can_sends.extend(self.CCS.create_acc_accel_control(self.packer_pt, CANBUS.pt, CS.acc_type, accel,
                                                          acc_control, stopping, starting, CS.esp_hold_confirmation,
