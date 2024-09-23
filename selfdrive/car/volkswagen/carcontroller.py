@@ -35,6 +35,7 @@ class CarController(CarControllerBase):
     self.deviationV = [0., 0.075, 0.15, 0.075, 0.]                 # comfort-band (m/s squared)
     self.rateLimitBP = [-3., -1.75, -0.25, 0., 0.25, 1.75, 3.]     # accel        (m/s squared)
     self.ratelimitV = [3., 2.50, 0.50, 0.20, 0.50, 1.70, 3.]       # jerk-limits  (m/s squared)
+    self.smoothingFactor = 0.3                                     # closer to 0 = more smoothing, 1 = no smoothing
     self.longDeviation = 0
     self.longRateLimit = 0
 
@@ -151,8 +152,10 @@ class CarController(CarControllerBase):
       accel = clip(actuators.accel, self.CCP.ACCEL_MIN, self.CCP.ACCEL_MAX) if CC.longActive else 0
       stopping = actuators.longControlState == LongCtrlState.stopping
       starting = actuators.longControlState == LongCtrlState.pid and (CS.esp_hold_confirmation or CS.out.vEgo < self.CP.vEgoStopping)
-      self.longDeviation = interp(((accel - self.accel_last)*50), self.deviationBP, self.deviationV)
-      self.longRateLimit = interp(((accel - self.accel_last)*50), self.rateLimitBP, self.ratelimitV)
+      accel_diff = (accel - self.accel_last) * 50
+      self.smoothed_accel_diff = (self.smoothingFactor * accel_diff) + (1 - self.smoothingFactor) * getattr(self, 'smoothed_accel_diff', 0)
+      self.longDeviation = interp(self.smoothed_accel_diff, self.deviationBP, self.deviationV)
+      self.longRateLimit = interp(self.smoothed_accel_diff, self.rateLimitBP, self.ratelimitV)
       clip(self.longDeviation, self.deviationV[0], self.deviationV[2])
       clip(self.longRateLimit, self.ratelimitV[3], self.ratelimitV[0])
       self.accel_last = accel
