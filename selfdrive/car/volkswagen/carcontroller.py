@@ -31,11 +31,11 @@ class CarController(CarControllerBase):
     self.last_button_frame = 0
     self.accel_last = 0
 
-    self.deviationBP = [-0.25, 0., 0.25]                                      # accel        (m/s squared)
-    self.deviationV = [0., 0.10, 0.]                                          # comfort-band (m/s squared)
-    self.rateLimitBP = [-3., -1.75, -1.25, -0.25, 0., 0.25, 1.25, 1.75, 3.]   # accel        (m/s squared)
-    self.ratelimitV = [4., 2.50, 1.50, 0.50, 0.20, 0.50, 1.70, 2.3, 3.5]      # jerk-limits  (m/s squared)
-    self.smoothingFactor = 0.1                                                # closer to 0 = more smoothing, 1 = no smoothing
+    self.deviationBP = [-0.25, 0., 0.25]  # accel        (m/s squared)
+    self.deviationV = [0., 0.10, 0.]      # comfort-band (m/s squared)
+    self.rateLimitBP = [-3., 0., 3.]      # accel        (m/s squared)
+    self.ratelimitV = [4., 0.20, 4.]      # jerk-limits  (m/s squared)
+    self.smoothingFactor = 0.03           # closer to 0 = more smoothing, 1 = no smoothing
     self.longDeviation = 0
     self.longRateLimit = 0
 
@@ -147,18 +147,18 @@ class CarController(CarControllerBase):
 
     # **** Acceleration Controls ******************************************** #
 
+    accel = clip(actuators.accel, self.CCP.ACCEL_MIN, self.CCP.ACCEL_MAX) if CC.longActive else 0
+    accel_diff = (accel - self.accel_last) * 50
+    self.accel_last = accel
+    self.smoothed_accel_diff = (self.smoothingFactor * accel_diff) + (1 - self.smoothingFactor) * getattr(self, 'smoothed_accel_diff', 0)
     if self.frame % self.CCP.ACC_CONTROL_STEP == 0 and self.CP.openpilotLongitudinalControl:
       acc_control = self.CCS.acc_control_value(CS.out.cruiseState.available, CS.out.accFaulted, CC.longActive, CC.cruiseControl.override)
-      accel = clip(actuators.accel, self.CCP.ACCEL_MIN, self.CCP.ACCEL_MAX) if CC.longActive else 0
       stopping = actuators.longControlState == LongCtrlState.stopping
       starting = actuators.longControlState == LongCtrlState.pid and (CS.esp_hold_confirmation or CS.out.vEgo < self.CP.vEgoStopping)
-      accel_diff = (accel - self.accel_last) * 50
-      self.smoothed_accel_diff = (self.smoothingFactor * accel_diff) + (1 - self.smoothingFactor) * getattr(self, 'smoothed_accel_diff', 0)
       self.longDeviation = interp(self.smoothed_accel_diff, self.deviationBP, self.deviationV)
       self.longRateLimit = interp(self.smoothed_accel_diff, self.rateLimitBP, self.ratelimitV)
       clip(self.longDeviation, self.deviationV[0], self.deviationV[1])
-      clip(self.longRateLimit, self.ratelimitV[4], self.ratelimitV[0])
-      self.accel_last = accel
+      clip(self.longRateLimit, self.ratelimitV[1], self.ratelimitV[0])
 
       can_sends.extend(self.CCS.create_acc_accel_control(self.packer_pt, CANBUS.pt, CS.acc_type, accel,
                                                          acc_control, stopping, starting, CS.esp_hold_confirmation,
