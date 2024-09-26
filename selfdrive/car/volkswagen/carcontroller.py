@@ -31,8 +31,8 @@ class CarController(CarControllerBase):
     self.last_button_frame = 0
     self.accel_last = 0
 
-    self.deviationBP = [-0.8, 0., 0.3]    # accel        (m/s squared)
-    self.deviationV = [0., 0.15, 0.]      # comfort-band (m/s squared)
+    self.deviationBP = [-0.8, -0.5, 0., 0.3]    # accel        (m/s squared)
+    self.deviationV = [0., 0.08, 0.13, 0.]      # comfort-band (m/s squared)
     self.rateLimitBP = [-5., 0., 5.]      # accel        (m/s squared)
     self.ratelimitV = [4., 0.20, 4.]      # jerk-limits  (m/s squared)
     self.smoothingFactor = 0.13           # closer to 0 = more smoothing, 1 = no smoothing
@@ -156,7 +156,7 @@ class CarController(CarControllerBase):
       self.smoothed_accel_diff = (self.smoothingFactor * accel_diff) + (1 - self.smoothingFactor) * getattr(self, 'smoothed_accel_diff', 0)
       self.longDeviation = interp(self.smoothed_accel_diff, self.deviationBP, self.deviationV)
       self.longRateLimit = interp(self.smoothed_accel_diff, self.rateLimitBP, self.ratelimitV)
-      clip(self.longDeviation, self.deviationV[0], self.deviationV[1])
+      clip(self.longDeviation, self.deviationV[0], self.deviationV[2])
       clip(self.longRateLimit, self.ratelimitV[1], self.ratelimitV[0])
       self.accel_last = accel
 
