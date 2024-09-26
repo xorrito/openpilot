@@ -35,7 +35,7 @@ class CarController(CarControllerBase):
     self.deviationV = [0., 0.15, 0.]      # comfort-band (m/s squared)
     self.rateLimitBP = [-5., 0., 5.]      # accel        (m/s squared)
     self.ratelimitV = [4., 0.20, 4.]      # jerk-limits  (m/s squared)
-    self.smoothingFactor = 0.15           # closer to 0 = more smoothing, 1 = no smoothing
+    self.smoothingFactor = 0.13           # closer to 0 = more smoothing, 1 = no smoothing
     self.longDeviation = 0
     self.longRateLimit = 0
 
