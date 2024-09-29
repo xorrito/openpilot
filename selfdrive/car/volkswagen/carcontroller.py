@@ -36,8 +36,7 @@ class CarController(CarControllerBase):
     self.rateLimitBP = [-5., 0., 5.]      # accel        (m/s squared)
     self.ratelimitV = [4., 0.20, 4.]      # jerk-limits  (m/s squared)
                                           # SMA to EMA conversion: alpha = 2 / (n + 1)    n = SMA-sample
-    self.accelDiffSmooth = 0.0198         # closer to 0 = more smoothing, 1 = no smoothing (eq = 100 SMA-sample)
-    self.longSignalSmooth = 0.00797       # closer to 0 = more smoothing, 1 = no smoothing (eq = 250 SMA-sample)
+    self.longSignalSmooth = 0.00724       # closer to 0 = more smoothing, 1 = no smoothing (eq = 275 SMA-sample)
     self.long_deviation = 0
     self.long_ratelimit = 0
 
@@ -155,9 +154,8 @@ class CarController(CarControllerBase):
       stopping = actuators.longControlState == LongCtrlState.stopping
       starting = actuators.longControlState == LongCtrlState.pid and (CS.esp_hold_confirmation or CS.out.vEgo < self.CP.vEgoStopping)
       accel_diff = (accel - self.accel_last) * 50
-      self.smoothed_accel_diff = (self.accelDiffSmooth * accel_diff) + (1 - self.accelDiffSmooth) * getattr(self, 'smoothed_accel_diff', 0)
-      long_deviation_lookup = interp(self.smoothed_accel_diff, self.deviationBP, self.deviationV)
-      long_ratelimit_lookup = interp(self.smoothed_accel_diff, self.rateLimitBP, self.ratelimitV)
+      long_deviation_lookup = interp(accel_diff, self.deviationBP, self.deviationV)
+      long_ratelimit_lookup = interp(accel_diff, self.rateLimitBP, self.ratelimitV)
       self.long_deviation = (self.longSignalSmooth * long_deviation_lookup) + (1 - self.longSignalSmooth) * getattr(self, 'long_deviation', 0)
       self.long_ratelimit = (self.longSignalSmooth * long_ratelimit_lookup) + (1 - self.longSignalSmooth) * getattr(self, 'long_ratelimit', 0)
       clip(self.long_deviation, self.deviationV[0], self.deviationV[1])
