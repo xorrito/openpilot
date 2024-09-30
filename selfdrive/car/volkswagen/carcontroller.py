@@ -156,8 +156,8 @@ class CarController(CarControllerBase):
       self.accel_diff_smoothed = (self.longSignalSmooth * accel_diff) + (1 - self.longSignalSmooth) * getattr(self, 'accel_diff_smoothed', 0)
       long_deviation = interp(self.accel_diff_smoothed, self.deviationBP, self.deviationV)
       long_ratelimit = interp(self.accel_diff_smoothed, self.rateLimitBP, self.ratelimitV)
-      clip(self.long_deviation, self.deviationV[0], self.deviationV[1])
-      clip(self.long_ratelimit, self.ratelimitV[1], self.ratelimitV[0])
+      clip(long_deviation, self.deviationV[0], self.deviationV[1])
+      clip(long_ratelimit, self.ratelimitV[1], self.ratelimitV[0])
       self.accel_last = accel
 
       can_sends.extend(self.CCS.create_acc_accel_control(self.packer_pt, CANBUS.pt, CS.acc_type, accel,
