@@ -33,10 +33,10 @@ class CarController(CarControllerBase):
 
     self.deviationBP = [-0.15, 0.]    # accel        (m/s squared)
     self.deviationV = [0., 0.15]      # comfort-band (m/s squared)
-    self.rateLimitBP = [-2., 0.]      # accel        (m/s squared)
+    self.rateLimitBP = [-1., 0.]      # accel        (m/s squared)
     self.ratelimitV = [4., 0.50]      # jerk-limits  (m/s squared)
                                       # SMA to EMA conversion: alpha = 2 / (n + 1)    n = SMA-sample
-    self.longSignalSmooth = 0.00724   # closer to 0 = more smoothing, 1 = no smoothing (eq = 275 SMA-sample)
+    self.longSignalSmooth = 0.00664   # closer to 0 = more smoothing, 1 = no smoothing (eq = 300 SMA-sample)
     self.accel_diff_smoothed = 0
 
     self.sm = messaging.SubMaster(['longitudinalPlanSP'])
@@ -158,7 +158,7 @@ class CarController(CarControllerBase):
       long_ratelimit = interp(self.accel_diff_smoothed, self.rateLimitBP, self.ratelimitV)
       clip(long_deviation, self.deviationV[0], self.deviationV[1])
       clip(long_ratelimit, self.ratelimitV[1], self.ratelimitV[0])
-      self.accel_last = accel
+      self.accel_last = self.accel_last if accel == -3.5 else accel
 
       can_sends.extend(self.CCS.create_acc_accel_control(self.packer_pt, CANBUS.pt, CS.acc_type, accel,
                                                          acc_control, stopping, starting, CS.esp_hold_confirmation,
