@@ -31,14 +31,13 @@ class CarController(CarControllerBase):
     self.last_button_frame = 0
     self.accel_last = 0
 
-    self.deviationBP = [-0.13, 0., 0.13]    # accel        (m/s squared)
-    self.deviationV = [0., 0.13, 0.]      # comfort-band (m/s squared)
-    self.rateLimitBP = [-2., 0., 2.]      # accel        (m/s squared)
-    self.ratelimitV = [4., 0.20, 4.]      # jerk-limits  (m/s squared)
-                                          # SMA to EMA conversion: alpha = 2 / (n + 1)    n = SMA-sample
-    self.longSignalSmooth = 0.00724       # closer to 0 = more smoothing, 1 = no smoothing (eq = 275 SMA-sample)
-    self.long_deviation = 0
-    self.long_ratelimit = 0
+    self.deviationBP = [-0.15, 0.]    # accel        (m/s squared)
+    self.deviationV = [0., 0.15]      # comfort-band (m/s squared)
+    self.rateLimitBP = [-2., 0.]      # accel        (m/s squared)
+    self.ratelimitV = [4., 0.50]      # jerk-limits  (m/s squared)
+                                      # SMA to EMA conversion: alpha = 2 / (n + 1)    n = SMA-sample
+    self.longSignalSmooth = 0.00724   # closer to 0 = more smoothing, 1 = no smoothing (eq = 275 SMA-sample)
+    self.accel_diff_smoothed = 0
 
     self.sm = messaging.SubMaster(['longitudinalPlanSP'])
     self.param_s = Params()
@@ -154,17 +153,16 @@ class CarController(CarControllerBase):
       stopping = actuators.longControlState == LongCtrlState.stopping
       starting = actuators.longControlState == LongCtrlState.pid and (CS.esp_hold_confirmation or CS.out.vEgo < self.CP.vEgoStopping)
       accel_diff = (accel - self.accel_last) * 50
-      long_deviation_lookup = interp(accel_diff, self.deviationBP, self.deviationV)
-      long_ratelimit_lookup = interp(accel_diff, self.rateLimitBP, self.ratelimitV)
-      self.long_deviation = (self.longSignalSmooth * long_deviation_lookup) + (1 - self.longSignalSmooth) * getattr(self, 'long_deviation', 0)
-      self.long_ratelimit = (self.longSignalSmooth * long_ratelimit_lookup) + (1 - self.longSignalSmooth) * getattr(self, 'long_ratelimit', 0)
+      self.accel_diff_smoothed = (self.longSignalSmooth * accel_diff) + (1 - self.longSignalSmooth) * getattr(self, 'accel_diff_smoothed', 0)
+      long_deviation = interp(self.accel_diff_smoothed, self.deviationBP, self.deviationV)
+      long_ratelimit = interp(self.accel_diff_smoothed, self.rateLimitBP, self.ratelimitV)
       clip(self.long_deviation, self.deviationV[0], self.deviationV[1])
       clip(self.long_ratelimit, self.ratelimitV[1], self.ratelimitV[0])
       self.accel_last = accel
 
       can_sends.extend(self.CCS.create_acc_accel_control(self.packer_pt, CANBUS.pt, CS.acc_type, accel,
                                                          acc_control, stopping, starting, CS.esp_hold_confirmation,
-                                                         self.long_deviation, self.long_ratelimit))
+                                                         long_deviation, long_ratelimit))
 
     # **** HUD Controls ***************************************************** #
 
