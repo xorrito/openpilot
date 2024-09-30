@@ -158,8 +158,8 @@ class CarController(CarControllerBase):
       ratelimit_lookup = interp(self.accel_diff_smoothed, self.rateLimitBP, self.ratelimitV)
       clip(deviation_lookup, self.deviationV[0], self.deviationV[1])
       clip(ratelimit_lookup, self.ratelimitV[1], self.ratelimitV[0])
-      self.long_deviation = (0.1 * deviation_lookup) + (1 - 0.1) * getattr(self, 'long_deviation', 0)
-      self.long_ratelimit = (0.1 * ratelimit_lookup) + (1 - 0.1) * getattr(self, 'long_ratelimit', 0)
+      self.long_deviation = (0.019 * deviation_lookup) + (1 - 0.019) * getattr(self, 'long_deviation', 0)
+      self.long_ratelimit = (0.009 * ratelimit_lookup) + (1 - 0.009) * getattr(self, 'long_ratelimit', 0)
       self.accel_last = self.accel_last if accel == -3.5 else accel
 
       can_sends.extend(self.CCS.create_acc_accel_control(self.packer_pt, CANBUS.pt, CS.acc_type, accel,
