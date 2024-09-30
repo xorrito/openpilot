@@ -31,9 +31,9 @@ class CarController(CarControllerBase):
     self.last_button_frame = 0
     self.accel_last = 0
 
-    self.deviationBP = [-0.15, 0.]    # accel        (m/s squared)
+    self.deviationBP = [-0.08, 0.]    # accel        (m/s squared)
     self.deviationV = [0., 0.15]      # comfort-band (m/s squared)
-    self.rateLimitBP = [-1., 0.]      # accel        (m/s squared)
+    self.rateLimitBP = [-0.3, 0.]     # accel        (m/s squared)
     self.ratelimitV = [4., 0.50]      # jerk-limits  (m/s squared)
                                       # SMA to EMA conversion: alpha = 2 / (n + 1)    n = SMA-sample
     self.longSignalSmooth = 0.00664   # closer to 0 = more smoothing, 1 = no smoothing (eq = 300 SMA-sample)
@@ -154,15 +154,17 @@ class CarController(CarControllerBase):
       starting = actuators.longControlState == LongCtrlState.pid and (CS.esp_hold_confirmation or CS.out.vEgo < self.CP.vEgoStopping)
       accel_diff = (accel - self.accel_last) * 50
       self.accel_diff_smoothed = (self.longSignalSmooth * accel_diff) + (1 - self.longSignalSmooth) * getattr(self, 'accel_diff_smoothed', 0)
-      long_deviation = interp(self.accel_diff_smoothed, self.deviationBP, self.deviationV)
-      long_ratelimit = interp(self.accel_diff_smoothed, self.rateLimitBP, self.ratelimitV)
-      clip(long_deviation, self.deviationV[0], self.deviationV[1])
-      clip(long_ratelimit, self.ratelimitV[1], self.ratelimitV[0])
+      deviation_lookup = interp(self.accel_diff_smoothed, self.deviationBP, self.deviationV)
+      ratelimit_lookup = interp(self.accel_diff_smoothed, self.rateLimitBP, self.ratelimitV)
+      clip(deviation_lookup, self.deviationV[0], self.deviationV[1])
+      clip(ratelimit_lookup, self.ratelimitV[1], self.ratelimitV[0])
+      self.long_deviation = (0.1 * deviation_lookup) + (1 - 0.1) * getattr(self, 'long_deviation', 0)
+      self.long_ratelimit = (0.1 * ratelimit_lookup) + (1 - 0.1) * getattr(self, 'long_ratelimit', 0)
       self.accel_last = self.accel_last if accel == -3.5 else accel
 
       can_sends.extend(self.CCS.create_acc_accel_control(self.packer_pt, CANBUS.pt, CS.acc_type, accel,
                                                          acc_control, stopping, starting, CS.esp_hold_confirmation,
-                                                         long_deviation, long_ratelimit))
+                                                         self.long_deviation, self.long_ratelimit))
 
     # **** HUD Controls ***************************************************** #
 
