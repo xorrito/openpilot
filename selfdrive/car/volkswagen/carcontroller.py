@@ -31,10 +31,10 @@ class CarController(CarControllerBase):
     self.last_button_frame = 0
     self.accel_last = 0
 
-    self.deviationBP = [-0.08, 0.]    # accel        (m/s squared)
-    self.deviationV = [0., 0.15]      # comfort-band (m/s squared)
-    self.rateLimitBP = [-0.3, 0.]     # accel        (m/s squared)
-    self.ratelimitV = [4., 0.50]      # jerk-limits  (m/s squared)
+    self.deviationBP = [-0.05, -0.03, -0.02, 0.]    # accel        (m/s squared)
+    self.deviationV = [0., 0.1, 0.13, 0.15]         # comfort-band (m/s squared)
+    self.rateLimitBP = [-0.2, -0.13, -0.05, 0.]     # accel        (m/s squared)
+    self.ratelimitV = [4., 2., 0.75, 0.50]          # jerk-limits  (m/s squared)
                                       # SMA to EMA conversion: alpha = 2 / (n + 1)    n = SMA-sample
     self.longSignalSmooth = 0.00664   # closer to 0 = more smoothing, 1 = no smoothing (eq = 300 SMA-sample)
     self.accel_diff_smoothed = 0
@@ -156,8 +156,8 @@ class CarController(CarControllerBase):
       self.accel_diff_smoothed = (self.longSignalSmooth * accel_diff) + (1 - self.longSignalSmooth) * getattr(self, 'accel_diff_smoothed', 0)
       deviation_lookup = interp(self.accel_diff_smoothed, self.deviationBP, self.deviationV)
       ratelimit_lookup = interp(self.accel_diff_smoothed, self.rateLimitBP, self.ratelimitV)
-      clip(deviation_lookup, self.deviationV[0], self.deviationV[1])
-      clip(ratelimit_lookup, self.ratelimitV[1], self.ratelimitV[0])
+      clip(deviation_lookup, self.deviationV[0], self.deviationV[3])
+      clip(ratelimit_lookup, self.ratelimitV[3], self.ratelimitV[0])
       self.long_deviation = (0.019 * deviation_lookup) + (1 - 0.019) * getattr(self, 'long_deviation', 0)
       self.long_ratelimit = (0.009 * ratelimit_lookup) + (1 - 0.009) * getattr(self, 'long_ratelimit', 0)
       self.accel_last = self.accel_last if accel == -3.5 else accel
