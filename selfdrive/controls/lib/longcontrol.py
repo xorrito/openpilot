@@ -1,5 +1,5 @@
 from cereal import car
-from openpilot.common.numpy_fast import clip
+from openpilot.common.numpy_fast import clip, interp
 from openpilot.common.realtime import DT_CTRL
 from openpilot.selfdrive.controls.lib.drive_helpers import CONTROL_N
 from openpilot.selfdrive.controls.lib.pid import PIDController
@@ -58,7 +58,7 @@ class LongControl:
   def reset(self):
     self.pid.reset()
 
-  def update(self, active, CS, a_target, should_stop, accel_limits):
+  def update(self, active, CS, a_target, should_stop, accel_limits, t_since_plan, long_plan):
     """Update longitudinal control. This updates the state machine and runs a PID loop"""
     self.pid.neg_limit = accel_limits[0]
     self.pid.pos_limit = accel_limits[1]
@@ -82,7 +82,11 @@ class LongControl:
       self.reset()
 
     else:  # LongCtrlState.pid
-      error = a_target - CS.aEgo
+      # v_target_now = interp(t_since_plan, ModelConstants.T_IDXS[:CONTROL_N], long_plan.speeds)
+      a_target_now = interp(t_since_plan, ModelConstants.T_IDXS[:CONTROL_N], long_plan.accels)
+
+      # error = v_target_now - CS.vEgo  # better for PID control?
+      error = a_target_now - CS.aEgo   # error = a_target - CS.aEgo (problematic code)
       output_accel = self.pid.update(error, speed=CS.vEgo,
                                      feedforward=a_target)
 
