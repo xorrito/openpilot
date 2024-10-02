@@ -31,9 +31,9 @@ class CarController(CarControllerBase):
     self.last_button_frame = 0
     self.accel_last = 0
 
-    self.deviationBP = [-0.05, -0.03, -0.02, 0.]    # accel        (m/s squared)
+    self.deviationBP = [-0.5, -0.3, -0.2, 0.]       # accel        (m/s squared)
     self.deviationV = [0., 0.1, 0.13, 0.15]         # comfort-band (m/s squared)
-    self.rateLimitBP = [-0.2, -0.13, -0.05, 0.]     # accel        (m/s squared)
+    self.rateLimitBP = [-2., -1.3, -0.5, 0.]        # accel        (m/s squared)
     self.ratelimitV = [4., 2., 0.75, 0.50]          # jerk-limits  (m/s squared)
                                       # SMA to EMA conversion: alpha = 2 / (n + 1)    n = SMA-sample
     self.longSignalSmooth = 0.00664   # closer to 0 = more smoothing, 1 = no smoothing (eq = 300 SMA-sample)
