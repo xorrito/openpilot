@@ -33,10 +33,10 @@ class CarController(CarControllerBase):
 
     self.deviationBP = [-0.3, -0.2, -0.1, 0.]       # accel        (m/s squared)
     self.deviationV = [0., 0.1, 0.13, 0.15]         # comfort-band (m/s squared)
-    self.rateLimitBP = [-1.3, -0.8, -0.3, 0.]       # accel        (m/s squared)
+    self.rateLimitBP = [-2.1, -1.3, -0.5, 0.]       # accel        (m/s squared)
     self.ratelimitV = [4., 2., 0.75, 0.50]          # jerk-limits  (m/s squared)
                                       # SMA to EMA conversion: alpha = 2 / (n + 1)    n = SMA-sample
-    self.longSignalSmooth = 0.00664   # closer to 0 = more smoothing, 1 = no smoothing (eq = 300 SMA-sample)
+    self.longSignalSmooth = 0.00995   # closer to 0 = more smoothing, 1 = no smoothing (eq = 200 SMA-sample)
     self.accel_diff_smoothed = 0
 
     self.sm = messaging.SubMaster(['longitudinalPlanSP'])
@@ -152,14 +152,15 @@ class CarController(CarControllerBase):
       accel = clip(actuators.accel, self.CCP.ACCEL_MIN, self.CCP.ACCEL_MAX) if CC.longActive else 0
       stopping = actuators.longControlState == LongCtrlState.stopping
       starting = actuators.longControlState == LongCtrlState.pid and (CS.esp_hold_confirmation or CS.out.vEgo < self.CP.vEgoStopping)
-      accel_diff = (accel - self.accel_last) * 50 if accel - self.accel_last <= 0 else 0
+      accel_diff = (accel - self.accel_last) * 50
+      clip(accel_diff, self.rateLimitBP[0], self.rateLimitBP[3])
       self.accel_diff_smoothed = (self.longSignalSmooth * accel_diff) + (1 - self.longSignalSmooth) * getattr(self, 'accel_diff_smoothed', 0)
       deviation_lookup = interp(self.accel_diff_smoothed, self.deviationBP, self.deviationV)
       ratelimit_lookup = interp(self.accel_diff_smoothed, self.rateLimitBP, self.ratelimitV)
       clip(deviation_lookup, self.deviationV[0], self.deviationV[3])
       clip(ratelimit_lookup, self.ratelimitV[3], self.ratelimitV[0])
-      self.long_deviation = (0.019 * deviation_lookup) + (1 - 0.019) * getattr(self, 'long_deviation', 0)
-      self.long_ratelimit = (0.009 * ratelimit_lookup) + (1 - 0.009) * getattr(self, 'long_ratelimit', 0)
+      self.long_deviation = (0.019 * deviation_lookup) + (1 - 0.019) * getattr(self, 'long_deviation', 0)  # 100 SMA equivalence
+      self.long_ratelimit = (0.007 * ratelimit_lookup) + (1 - 0.007) * getattr(self, 'long_ratelimit', 0)  # 250 SMA equivalence
       self.accel_last = self.accel_last if accel == self.CCP.ACCEL_MIN else accel
 
       can_sends.extend(self.CCS.create_acc_accel_control(self.packer_pt, CANBUS.pt, CS.acc_type, accel,
