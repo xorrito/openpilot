@@ -32,7 +32,7 @@ class CarController(CarControllerBase):
     self.accel_last = 0
 
     self.deviationBP = [-0.13, -0.1, -0.05, 0.]     # accel        (m/s squared)
-    self.deviationV = [0., 0.08, 0.14, 0.15]        # comfort-band (m/s squared)
+    self.deviationV = [0., 0.13, 0.25, 0.28]        # comfort-band (m/s squared)
     self.rateLimitBP = [-0.5, -0.3, -0.1, 0.]       # accel        (m/s squared)
     self.ratelimitV = [4., 2., 1.2, 1.]             # jerk-limits  (m/s squared)
                                       # SMA to EMA conversion: alpha = 2 / (n + 1)    n = SMA-sample
@@ -157,10 +157,11 @@ class CarController(CarControllerBase):
       self.accel_diff_smoothed = (self.longSignalSmooth * accel_diff) + (1 - self.longSignalSmooth) * getattr(self, 'accel_diff_smoothed', 0)
       deviation_lookup = interp(self.accel_diff_smoothed, self.deviationBP, self.deviationV)
       ratelimit_lookup = interp(self.accel_diff_smoothed, self.rateLimitBP, self.ratelimitV)
-      clip(deviation_lookup, self.deviationV[0], self.deviationV[3])
-      clip(ratelimit_lookup, self.ratelimitV[3], self.ratelimitV[0])
       self.long_deviation = (0.019 * deviation_lookup) + (1 - 0.019) * getattr(self, 'long_deviation', 0)  # 100 SMA equivalence
       self.long_ratelimit = (0.007 * ratelimit_lookup) + (1 - 0.007) * getattr(self, 'long_ratelimit', 0)  # 250 SMA equivalence
+      self.long_ratelimit = self.long_ratelimit * interp(CS.out.vEgo, [0,2,3], [0,1,1])       # 1x - 0x interpolation for RegelAbw during FTS
+      clip(self.long_deviation, self.deviationV[0], self.deviationV[3])
+      clip(self.long_ratelimit, self.ratelimitV[3], self.ratelimitV[0])
       self.accel_last = self.accel_last if accel == self.CCP.ACCEL_MIN else accel
 
       can_sends.extend(self.CCS.create_acc_accel_control(self.packer_pt, CANBUS.pt, CS.acc_type, accel,
