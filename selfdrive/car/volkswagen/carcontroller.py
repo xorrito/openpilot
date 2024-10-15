@@ -30,6 +30,7 @@ class CarController(CarControllerBase):
     self.hca_frame_same_torque = 0
     self.last_button_frame = 0
     self.accel_last = 0
+    self.motor2_frame = 0
 
     self.deviationBP = [-0.13, -0.1, -0.05, 0.]     # accel        (m/s squared)
     self.deviationV = [0., 0.08, 0.14, 0.15]        # comfort-band (m/s squared)
@@ -217,7 +218,7 @@ class CarController(CarControllerBase):
 
     # **** Blinding Motor_2 for PQ radar ************ #
     if VolkswagenFlags.PQ and self.ext_bus == CANBUS.cam and self.CP.openpilotLongitudinalControl:
-      if getattr(self, "motor2_frame", 0) % 2 or CS.motor2_stock != getattr(self, 'motor2_last', CS.motor2_stock):  # 50hz / 20ms
+      if self.motor2_frame % 2 or CS.motor2_stock != getattr(self, 'motor2_last', CS.motor2_stock):  # 50hz / 20ms
         can_sends.append(self.CCS.create_motor2_control(self.packer_pt, CANBUS.cam, CS.motor2_stock))
         self.motor2_frame = 0
       self.motor2_last = CS.motor2_stock
