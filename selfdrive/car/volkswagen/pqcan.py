@@ -46,11 +46,11 @@ def create_acc_buttons_control(packer, bus, gra_stock_values, frame=0, buttons=0
 
   values.update({
     "COUNTER": (frame + 1) % 0x10 if custom_stock_long else (gra_stock_values["COUNTER"] + 1) % 16,
-    "GRA_Abbrechen": cancel,
-    "GRA_Recall": resume or resume_cruise,
-    "GRA_Neu_Setzen": set_cruise,
-    "GRA_Down_kurz": decel_cruise,
-    "GRA_Up_kurz": accel_cruise,
+    "GRA_Abbrechen": cancel if custom_stock_long else 0,
+    "GRA_Recall": resume or resume_cruise if custom_stock_long else 0,
+    "GRA_Neu_Setzen": set_cruise if custom_stock_long else 0,
+    "GRA_Down_kurz": decel_cruise if custom_stock_long else 0,
+    "GRA_Up_kurz": accel_cruise if custom_stock_long else 0,
   })
 
   return packer.make_can_msg("GRA_Neu", bus, values)
@@ -112,3 +112,10 @@ def create_acc_hud_control(packer, bus, acc_hud_status, set_speed, lead_distance
   }
 
   return packer.make_can_msg("ACC_GRA_Anzeige", bus, values)
+
+def create_motor2_control(packer, bus, motor2_stock):
+  values = motor2_stock
+  values.update = {
+    "GRA_Status": 0,
+  }
+  return packer.make_can_msg("Motor_2", bus, values)
