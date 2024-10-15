@@ -115,7 +115,7 @@ def create_acc_hud_control(packer, bus, acc_hud_status, set_speed, lead_distance
 
 def create_motor2_control(packer, bus, motor2_stock):
   values = motor2_stock
-  values.update = ({
+  values.update({
     "GRA_Status": 0,
   })
   return packer.make_can_msg("Motor_2", bus, values)
