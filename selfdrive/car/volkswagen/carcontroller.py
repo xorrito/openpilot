@@ -192,7 +192,7 @@ class CarController(CarControllerBase):
 
     gra_send_ready = CS.gra_stock_values["COUNTER"] != self.gra_acc_counter_last
     if gra_send_ready and (CC.cruiseControl.cancel or CC.cruiseControl.resume):
-      can_sends.append(self.CCS.create_acc_buttons_control(self.packer_pt, self.ext_bus, CS.gra_stock_values,
+      can_sends.append(self.CCS.create_acc_buttons_control(self.packer_pt, self.ext_bus, CS.gra_stock_values, self.CP.openpilotLongitudinalControl,
                                                            cancel=CC.cruiseControl.cancel, resume=CC.cruiseControl.resume))
     if not (CC.cruiseControl.cancel or CC.cruiseControl.resume) and CS.out.cruiseState.enabled:
       if not self.CP.pcmCruiseSpeed:
@@ -209,8 +209,9 @@ class CarController(CarControllerBase):
           elif self.acc_type == 1:
             self.cruise_button = 3 if self.cruise_button == 1 else 4  # resume, set
           if self.frame % self.CCP.BTN_STEP == 0:
-            can_sends.append(self.CCS.create_acc_buttons_control(self.packer_pt, CS.gra_stock_values, frame=(self.frame // self.CCP.BTN_STEP),
-                                                                 buttons=self.cruise_button, custom_stock_long=True))
+            can_sends.append(self.CCS.create_acc_buttons_control(self.packer_pt, CS.gra_stock_values, self.CP.openpilotLongitudinalControl,
+                                                                 frame=(self.frame // self.CCP.BTN_STEP), buttons=self.cruise_button,
+                                                                 custom_stock_long=True))
             self.send_count += 1
         else:
           self.send_count = 0
