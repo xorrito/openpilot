@@ -161,7 +161,7 @@ class CarController(CarControllerBase):
       self.long_deviation = (0.019 * deviation_lookup) + (1 - 0.019) * getattr(self, 'long_deviation', 0)  # 100 SMA equivalence
       self.long_ratelimit = (0.007 * ratelimit_lookup) + (1 - 0.007) * getattr(self, 'long_ratelimit', 0)  # 250 SMA equivalence
       self.long_deviation = self.long_deviation * interp(CS.out.vEgo, [0,4,7,8], [0,0,1,1])       #  1x - 0x interpolation for RegelAbw during FTS
-      self.long_ratelimit = self.long_ratelimit * interp(CS.out.vEgo, [0,1,27,28], [.1,.1,1,1])   # .1x - 1x interpolation for AendGrad during 0-100kph
+      self.long_ratelimit = self.long_ratelimit * interp(CS.out.vEgo, [0,1,27,28], [1,1,1,1])   # .1x - 1x interpolation for AendGrad during 0-100kph
       clip(self.long_deviation, self.deviationV[0], self.deviationV[3])
       clip(self.long_ratelimit, self.ratelimitV[3], self.ratelimitV[0])
       self.accel_last = self.accel_last if accel == self.CCP.ACCEL_MIN else accel
