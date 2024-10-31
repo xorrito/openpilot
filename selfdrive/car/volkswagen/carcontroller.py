@@ -156,7 +156,7 @@ class CarController(CarControllerBase):
       stopping = actuators.longControlState == LongCtrlState.stopping
       starting = actuators.longControlState == LongCtrlState.pid and (CS.esp_hold_confirmation or CS.out.vEgo < self.CP.vEgoStopping)
       if self.CCS == pqcan and CC.longActive and (clip(actuators.accel, self.CCP.ACCEL_MIN, self.CCP.ACCEL_MAX) <= 0) and CS.out.vEgoRaw <= 6:
-        accel = 0
+        accel = clip(actuators.accel, self.CCP.ACCEL_MIN, 0) if self.AWV_counter <= 10 else 0
         self.AWV_enable = 1
         self.AWV_brake = clip(actuators.accel, self.CCP.ACCEL_MIN, 0) if self.AWV_counter >= 11 else 0
         self.AWV_counter += 1
