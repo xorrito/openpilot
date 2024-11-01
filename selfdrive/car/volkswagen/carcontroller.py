@@ -164,6 +164,7 @@ class CarController(CarControllerBase):
         self.AWV_enable = 0 if CS.out.vEgoRaw >= 6 else self.AWV_enable
         self.AWV_brake = 0
       self.AWV_halten = 1 if CS.out.vEgoRaw <= 3 and self.AWV_enable else 0
+      self.AWV_brake *= max(0, CS.out.vEgo / 1.5) if CS.out.vEgoRaw <= 1.5 else 1
       self.long_deviation = 0  # TODO: make dynamic again
       self.long_ratelimit = 4  # TODO: make dynamic again
 
