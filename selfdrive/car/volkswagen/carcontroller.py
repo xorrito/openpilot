@@ -161,7 +161,7 @@ class CarController(CarControllerBase):
         self.AWV_brake = clip(actuators.accel, self.CCP.ACCEL_MIN, 0)
       else:
         accel = clip(actuators.accel, self.CCP.ACCEL_MIN, self.CCP.ACCEL_MAX) if CC.longActive else 0
-        self.AWV_enable = 0
+        self.AWV_enable = 0 if CS.out.vEgoRaw >= 6 else self.AWV_enable
         self.AWV_brake = 0
       self.AWV_halten = 1 if CS.out.vEgoRaw <= 2 and self.AWV_enable else 0
       self.long_deviation = 0  # TODO: make dynamic again
