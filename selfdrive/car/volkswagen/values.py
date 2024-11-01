@@ -278,7 +278,7 @@ class CAR(Platforms):
   )
   VOLKSWAGEN_JETTA_MK6 = VolkswagenPQPlatformConfig(
     [VWCarDocs("Volkswagen Jetta 2015-2018")],
-    VolkswagenCarSpecs(mass=1518, wheelbase=2.62, minEnableSpeed=16 * CV.KPH_TO_MS),
+    VolkswagenCarSpecs(mass=1518, wheelbase=2.62),
     chassis_codes={"5K", "AJ"},
     wmis={WMI.VOLKSWAGEN_MEXICO_CAR},
   )
