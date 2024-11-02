@@ -99,13 +99,13 @@ def create_acc_accel_control(packer, bus, acc_type, accel, acc_control, stopping
 
   return commands
 
-def create_awv_control(packer, bus, apply_brake, enabled, halten):
+def create_awv_control(packer, bus, apply_brake, enabled, freigabe, halten):
 
   values = {
     "AWV_1_Parameter": 2 if enabled else 0,
     "AWV_1_Prefill": enabled,
-    "ANB_Teilbremsung_Freigabe": enabled,
-    "ANB_Ziel_Teilbrems_Verz_Anf": apply_brake if enabled else 0,
+    "ANB_Teilbremsung_Freigabe": freigabe,
+    "ANB_Ziel_Teilbrems_Verz_Anf": apply_brake if freigabe else 0,
     "AWV_Halten": halten,  # Hold at stop, configure later? Not needed?
   }
 
