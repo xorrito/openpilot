@@ -158,7 +158,10 @@ class CarController(CarControllerBase):
       if self.CCS == pqcan and CC.longActive and actuators.accel <= 0 and CS.out.vEgoRaw <= 6:
         accel = clip(actuators.accel, self.CCP.ACCEL_MIN, 0)
         self.AWV_enable = 1
-        self.AWV_brake = clip(actuators.accel, self.CCP.ACCEL_MIN, 0) * (max(0, (CS.out.vEgo - 0.14) / 3) if self.AWV_halten else 1)
+        if self.AWV_halten:
+          self.AWV_brake *= max(0, CS.out.vEgo / 1.5)
+        else:
+          self.AWV_brake = clip(actuators.accel, self.CCP.ACCEL_MIN, 0)
       else:
         accel = clip(actuators.accel, self.CCP.ACCEL_MIN, self.CCP.ACCEL_MAX) if CC.longActive else 0
         self.AWV_enable = 0 if CS.out.vEgoRaw >= 6 else self.AWV_enable
