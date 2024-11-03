@@ -154,13 +154,10 @@ class CarController(CarControllerBase):
       acc_control = self.CCS.acc_control_value(CS.out.cruiseState.available, CS.out.accFaulted, CC.longActive, CC.cruiseControl.override)
       stopping = actuators.longControlState == LongCtrlState.stopping
       starting = actuators.longControlState == LongCtrlState.pid and (CS.esp_hold_confirmation or CS.out.vEgo < self.CP.vEgoStopping)
-      if self.CCS == pqcan and CC.longActive and actuators.accel <= 0 and CS.out.vEgoRaw <= 5:
+      if self.CCS == pqcan and CC.longActive and actuators.accel <= 0 and (CS.out.vEgoRaw <= 5 or (CS.out.vEgoRaw <= 6 and self.EPB_enable)):
         accel = 0
-        if not self.EPB_enable:
-          self.EPB_enable = 1
-          self.EPB_brake = 0
-        else:
-          self.EPB_brake = clip(actuators.accel, self.CCP.ACCEL_MIN, 0)
+        self.EPB_brake = clip(actuators.accel, self.CCP.ACCEL_MIN, 0) if self.EPB_enable else 0
+        self.EPB_enable = 1
       else:
         accel = clip(actuators.accel, self.CCP.ACCEL_MIN, self.CCP.ACCEL_MAX) if CC.longActive else 0
         acc_control = 0 if CC.longActive and (self.EPB_enable or CS.out.vEgo <= 0.5) else acc_control
