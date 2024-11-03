@@ -99,18 +99,22 @@ def create_acc_accel_control(packer, bus, acc_type, accel, acc_control, stopping
 
   return commands
 
-def create_awv_control(packer, bus, apply_brake, enabled, freigabe, halten):
+def create_epb_control(packer, bus, apply_brake, epb_enabled):
 
   values = {
-    "AWV_1_Parameter": 2 if enabled else 0,
-    "AWV_1_Prefill": enabled,
-    "ANB_Teilbremsung_Freigabe": freigabe,
-    "ANB_Ziel_Teilbrems_Verz_Anf": apply_brake if freigabe else 0,
-    "AWV_Halten": halten,  # Hold at stop, configure later? Not needed?
+    "EP1_Fehler_Sta": 0,
+    "EP1_Sta_EPB": 0,
+    "EP1_Spannkraft": 0,
+    "EP1_Schalterinfo": 0,
+    "EP1_Fkt_Lampe": 0,
+    "EP1_Verzoegerung": apply_brake,                        #Brake request in m/s2
+    "EP1_Freigabe_Ver": 1 if epb_enabled else 0,            #Allow braking pressure to build.
+    "EP1_Bremslicht": 1 if apply_brake != 0 else 0,         #Enable brake lights
+    "EP1_HydrHalten": 1 if epb_enabled else 0,              #Disengage DSG
+    "EP1_AutoHold_aktiv": 1,                                #Signal indicating EPB is available
   }
 
-  return packer.make_can_msg("AWV", bus, values)
-
+  return packer.make_can_msg("EPB_1", bus, values)
 
 def create_acc_hud_control(packer, bus, acc_hud_status, set_speed, lead_distance, distance):
   values = {

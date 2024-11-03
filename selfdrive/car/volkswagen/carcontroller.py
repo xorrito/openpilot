@@ -31,11 +31,8 @@ class CarController(CarControllerBase):
     self.last_button_frame = 0
     self.accel_last = 0
     self.motor2_frame = 0
-    self.AWV_brake = 0
-    self.AWV_enable = 0
-    self.AWV_halten = 0
-    self.AWV_freigabe = 0
-    self.AWV_haltenCounter = 0
+    self.EPB_brake = 0
+    self.EPB_enable = 0
 
     self.deviationBP = [-0.13, -0.1, -0.05, 0.]     # accel        (m/s squared)
     self.deviationV = [0., 0.08, 0.14, 0.15]        # comfort-band (m/s squared)
@@ -157,31 +154,22 @@ class CarController(CarControllerBase):
       acc_control = self.CCS.acc_control_value(CS.out.cruiseState.available, CS.out.accFaulted, CC.longActive, CC.cruiseControl.override)
       stopping = actuators.longControlState == LongCtrlState.stopping
       starting = actuators.longControlState == LongCtrlState.pid and (CS.esp_hold_confirmation or CS.out.vEgo < self.CP.vEgoStopping)
-      if self.CCS == pqcan and CC.longActive and actuators.accel <= 0 and CS.out.vEgoRaw <= 6:
-        accel = clip(actuators.accel, self.CCP.ACCEL_MIN, 0)
-        self.AWV_enable = 1 if self.AWV_haltenCounter <= 5 else 0
-        self.AWV_freigabe = 1
-        if self.AWV_halten:
-          self.AWV_brake = min(self.AWV_brake + abs(self.AWV_brake) / 7, 0)
-          self.AWV_haltenCounter += 1 if self.AWV_haltenCounter <= 5 else self.AWV_haltenCounter
+      if self.CCS == pqcan and CC.longActive and actuators.accel <= 0 and CS.out.vEgoRaw <= 5:
+        accel = 0
+        if not self.EPB_enable:
+          self.EPB_enable = 1
+          self.EPB_brake = 0
         else:
-          self.AWV_brake = clip(actuators.accel, self.CCP.ACCEL_MIN, 0)
-          self.AWV_haltenCounter = 0
+          self.EPB_brake = clip(actuators.accel, self.CCP.ACCEL_MIN, 0)
       else:
         accel = clip(actuators.accel, self.CCP.ACCEL_MIN, self.CCP.ACCEL_MAX) if CC.longActive else 0
-        self.AWV_enable = 0
-        self.AWV_freigabe = 0 if CS.out.vEgoRaw >= 6 else self.AWV_freigabe
-        self.AWV_brake = 0
-        self.AWV_haltenCounter = 0
-      if self.AWV_freigabe and CS.out.vEgoRaw <= 3:
-          self.AWV_halten = 1
-      elif CS.out.vEgoRaw >= 4 or not self.AWV_freigabe:
-          self.AWV_halten = 0
+        self.EPB_enable = 0
+        self.EPB_brake = 0
       self.long_deviation = 0  # TODO: make dynamic again
       self.long_ratelimit = 4  # TODO: make dynamic again
 
       if self.CCS == pqcan:
-        can_sends.append(self.CCS.create_awv_control(self.packer_pt, CANBUS.pt, self.AWV_brake, self.AWV_enable, self.AWV_freigabe, self.AWV_halten))
+        can_sends.append(self.CCS.create_epb_control(self.packer_pt, CANBUS.br, self.EPB_brake, self.EPB_enable))
       can_sends.extend(self.CCS.create_acc_accel_control(self.packer_pt, CANBUS.pt, CS.acc_type, accel,
                                                          acc_control, stopping, starting, CS.esp_hold_confirmation,
                                                          self.long_deviation, self.long_ratelimit))
