@@ -160,7 +160,7 @@ class CarController(CarControllerBase):
         self.EPB_enable = 1
       else:
         accel = clip(actuators.accel, self.CCP.ACCEL_MIN, self.CCP.ACCEL_MAX) if CC.longActive else 0
-        acc_control = 0 if CC.longActive and (self.EPB_enable or CS.out.vEgo <= 0.5) else acc_control
+        acc_control = 0 if acc_control != 6 and self.EPB_enable else acc_control
         self.EPB_enable = 0
         self.EPB_brake = 0
       self.long_deviation = 0  # TODO: make dynamic again
