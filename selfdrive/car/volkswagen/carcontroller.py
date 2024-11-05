@@ -33,6 +33,7 @@ class CarController(CarControllerBase):
     self.motor2_frame = 0
     self.EPB_brake = 0
     self.EPB_enable = 0
+    self.EPB_counter = 0
 
     self.deviationBP = [-0.13, -0.1, -0.05, 0.]     # accel        (m/s squared)
     self.deviationV = [0., 0.08, 0.14, 0.15]        # comfort-band (m/s squared)
@@ -157,12 +158,24 @@ class CarController(CarControllerBase):
       if self.CCS == pqcan and CC.longActive and actuators.accel <= 0 and CS.out.vEgoRaw <= 5:
         accel = 0
         self.EPB_brake = clip(actuators.accel, self.CCP.ACCEL_MIN, 0) if self.EPB_enable else 0
+        if not self.EPB_enable:
+          self.EPB_counter = 0  # Reset frame counter when EPB_enable is first activated
         self.EPB_enable = 1
       else:
         accel = clip(actuators.accel, self.CCP.ACCEL_MIN, self.CCP.ACCEL_MAX) if CC.longActive else 0
-        acc_control = 0 if acc_control != 6 and self.EPB_enable else acc_control
+        acc_control = 0 if acc_control != 6 and self.EPB_enable else acc_control  # Pulse ACC status to 0 for one frame
         self.EPB_enable = 0
         self.EPB_brake = 0
+
+        # Increment the EPB counter when EPB is enabled
+        # Keep ACC status 0 for first 8 frames of EPB
+      if self.EPB_enable:
+        self.EPB_counter = min(self.EPB_counter + 1, 10)
+        if self.EPB_counter <= 9:
+          acc_control = 0
+      else:
+        self.EPB_counter = 0
+
       self.long_deviation = 0  # TODO: make dynamic again
       self.long_ratelimit = 4  # TODO: make dynamic again
 
