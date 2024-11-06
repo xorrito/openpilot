@@ -42,6 +42,8 @@ class CarController(CarControllerBase):
                                       # SMA to EMA conversion: alpha = 2 / (n + 1)    n = SMA-sample
     self.longSignalSmooth = 0.00995   # closer to 0 = more smoothing, 1 = no smoothing (eq = 200 SMA-sample)
     self.accel_diff = 0
+    self.long_deviation = 0
+    self.long_ratelimit = 0
 
     self.sm = messaging.SubMaster(['longitudinalPlanSP'])
     self.param_s = Params()
