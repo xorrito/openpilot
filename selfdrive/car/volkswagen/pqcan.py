@@ -91,8 +91,8 @@ def create_acc_accel_control(packer, bus, acc_type, accel, acc_control, stopping
     "ACS_Anhaltewunsch": acc_type == 1 and stopping,
     "ACS_FreigSollB": acc_enabled,
     "ACS_Sollbeschl": accel if acc_enabled else 3.01,
-    "ACS_zul_Regelabw": 0 if acc_enabled else 1.27,  # set to 0 for PIF tuning / behavior analysis
-    "ACS_max_AendGrad": 4 if acc_enabled else 5.08,  # set to 4 for PIF tuning
+    "ACS_zul_Regelabw": comfortBand if acc_enabled else 1.27,
+    "ACS_max_AendGrad": jerkLimit if acc_enabled else 5.08,
   }
 
   commands.append(packer.make_can_msg("ACC_System", bus, values))

@@ -41,7 +41,7 @@ class CarController(CarControllerBase):
     self.ratelimitV = [4., 2.02, 1.02, .5]          # jerk-limits  (m/s squared)
                                       # SMA to EMA conversion: alpha = 2 / (n + 1)    n = SMA-sample
     self.longSignalSmooth = 0.00995   # closer to 0 = more smoothing, 1 = no smoothing (eq = 200 SMA-sample)
-    self.accel_diff_smoothed = 0
+    self.accel_diff = 0
 
     self.sm = messaging.SubMaster(['longitudinalPlanSP'])
     self.param_s = Params()
@@ -156,7 +156,6 @@ class CarController(CarControllerBase):
       stopping = actuators.longControlState == LongCtrlState.stopping
       starting = actuators.longControlState == LongCtrlState.pid and (CS.esp_hold_confirmation or CS.out.vEgo < self.CP.vEgoStopping)
       if self.CCS == pqcan and CC.longActive and actuators.accel <= 0 and CS.out.vEgoRaw <= 5:
-        accel = 0
         self.EPB_brake = clip(actuators.accel, self.CCP.ACCEL_MIN, 0) if self.EPB_enable else 0
         if not self.EPB_enable:
           self.EPB_counter = 0  # Reset frame counter when EPB_enable is first activated
@@ -166,18 +165,19 @@ class CarController(CarControllerBase):
         acc_control = 0 if acc_control != 6 and self.EPB_enable else acc_control  # Pulse ACC status to 0 for one frame
         self.EPB_enable = 0
         self.EPB_brake = 0
+      self.accel_diff = (0.0019 * (accel - self.accel_last)) + (1 - 0.0019) * self.accel_diff         # 1000 SMA equivalence
+      self.long_deviation = interp(abs(accel - self.accel_diff), [0, .1, .2], [.13, .1, 0])           # floating comfort band calculation
+      self.long_ratelimit = (0.007 * (clip(abs(accel), 0.7, 3))) + (1 - 0.007) * self.long_ratelimit  # set jerk/rate limit based on accel
+      self.accel_last = accel
 
         # Increment the EPB counter when EPB is enabled
-        # Keep ACC status 0 for first 8 frames of EPB
+        # Keep ACC status 0 for first 9 frames of EPB
       if self.EPB_enable:
         self.EPB_counter = min(self.EPB_counter + 1, 10)
         if self.EPB_counter <= 9:
           acc_control = 0
       else:
         self.EPB_counter = 0
-
-      self.long_deviation = 0  # TODO: make dynamic again
-      self.long_ratelimit = 4  # TODO: make dynamic again
 
       if self.CCS == pqcan:
         can_sends.append(self.CCS.create_epb_control(self.packer_pt, CANBUS.br, self.EPB_brake, self.EPB_enable))
