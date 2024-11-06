@@ -157,20 +157,21 @@ class CarController(CarControllerBase):
       acc_control = self.CCS.acc_control_value(CS.out.cruiseState.available, CS.out.accFaulted, CC.longActive, CC.cruiseControl.override)
       stopping = actuators.longControlState == LongCtrlState.stopping
       starting = actuators.longControlState == LongCtrlState.pid and (CS.esp_hold_confirmation or CS.out.vEgo < self.CP.vEgoStopping)
+      accel = clip(actuators.accel, self.CCP.ACCEL_MIN, self.CCP.ACCEL_MAX) if CC.longActive else 0
+      self.accel_diff = (0.0019 * (accel - self.accel_last)) + (1 - 0.0019) * self.accel_diff         # 1000 SMA equivalence
+      self.long_deviation = interp(abs(accel - self.accel_diff), [0, .1, .2], [.13, .1, 0])           # floating comfort band calculation
+      self.long_ratelimit = (0.007 * (clip(abs(accel), 0.7, 3))) + (1 - 0.007) * self.long_ratelimit  # set jerk/rate limit based on accel
+      self.accel_last = accel
+
       if self.CCS == pqcan and CC.longActive and actuators.accel <= 0 and CS.out.vEgoRaw <= 5:
         self.EPB_brake = clip(actuators.accel, self.CCP.ACCEL_MIN, 0) if self.EPB_enable else 0
         if not self.EPB_enable:
           self.EPB_counter = 0  # Reset frame counter when EPB_enable is first activated
         self.EPB_enable = 1
       else:
-        accel = clip(actuators.accel, self.CCP.ACCEL_MIN, self.CCP.ACCEL_MAX) if CC.longActive else 0
         acc_control = 0 if acc_control != 6 and self.EPB_enable else acc_control  # Pulse ACC status to 0 for one frame
         self.EPB_enable = 0
         self.EPB_brake = 0
-      self.accel_diff = (0.0019 * (accel - self.accel_last)) + (1 - 0.0019) * self.accel_diff         # 1000 SMA equivalence
-      self.long_deviation = interp(abs(accel - self.accel_diff), [0, .1, .2], [.13, .1, 0])           # floating comfort band calculation
-      self.long_ratelimit = (0.007 * (clip(abs(accel), 0.7, 3))) + (1 - 0.007) * self.long_ratelimit  # set jerk/rate limit based on accel
-      self.accel_last = accel
 
         # Increment the EPB counter when EPB is enabled
         # Keep ACC status 0 for first 9 frames of EPB
