@@ -34,13 +34,6 @@ class CarController(CarControllerBase):
     self.EPB_brake = 0
     self.EPB_enable = 0
     self.EPB_counter = 0
-
-    self.deviationBP = [-0.13, -0.1, -0.05, 0.]     # accel        (m/s squared)
-    self.deviationV = [0., 0.08, 0.14, 0.15]        # comfort-band (m/s squared)
-    self.rateLimitBP = [-1., -0.67, -0.33, 0.]      # accel        (m/s squared)
-    self.ratelimitV = [4., 2.02, 1.02, .5]          # jerk-limits  (m/s squared)
-                                      # SMA to EMA conversion: alpha = 2 / (n + 1)    n = SMA-sample
-    self.longSignalSmooth = 0.00995   # closer to 0 = more smoothing, 1 = no smoothing (eq = 200 SMA-sample)
     self.accel_diff = 0
     self.long_deviation = 0
     self.long_ratelimit = 0
@@ -158,9 +151,10 @@ class CarController(CarControllerBase):
       stopping = actuators.longControlState == LongCtrlState.stopping
       starting = actuators.longControlState == LongCtrlState.pid and (CS.esp_hold_confirmation or CS.out.vEgo < self.CP.vEgoStopping)
       accel = clip(actuators.accel, self.CCP.ACCEL_MIN, self.CCP.ACCEL_MAX) if CC.longActive else 0
+                                                                            # SMA to EMA conversion: alpha = 2 / (n + 1)    n = SMA-sample
       self.accel_diff = (0.0019 * (accel - self.accel_last)) + (1 - 0.0019) * self.accel_diff         # 1000 SMA equivalence
       self.long_deviation = interp(abs(accel - self.accel_diff), [0, .2, .3], [.13, .1, 0])           # floating comfort band calculation
-      self.long_ratelimit = (0.007 * (clip(abs(accel), 0.7, 3))) + (1 - 0.007) * self.long_ratelimit  # set jerk/rate limit based on accel
+      self.long_ratelimit = (0.019 * (clip(abs(accel), 0.7, 3))) + (1 - 0.019) * self.long_ratelimit  # set jerk/rate limit based on accel
       self.accel_last = accel
 
       if self.CCS == pqcan and CC.longActive and actuators.accel <= 0 and CS.out.vEgoRaw <= 5:
