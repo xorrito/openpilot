@@ -155,13 +155,14 @@ class CarController(CarControllerBase):
       self.accel_diff = (0.0019 * (accel - self.accel_last)) + (1 - 0.0019) * self.accel_diff         # 1000 SMA equivalence
       self.long_deviation = interp(abs(accel - self.accel_diff), [0, .2, .3], [.13, .1, 0])           # floating comfort band calculation
       self.long_ratelimit = (0.019 * (clip(abs(accel), 0.7, 3))) + (1 - 0.019) * self.long_ratelimit  # set jerk/rate limit based on accel
-      self.accel_last = accel
 
       if self.CCS == pqcan and CC.longActive and actuators.accel <= 0 and CS.out.vEgoRaw <= 5:
-        self.EPB_brake = clip(actuators.accel, self.CCP.ACCEL_MIN, 0) if self.EPB_enable else 0
         if not self.EPB_enable:
           self.EPB_counter = 0  # Reset frame counter when EPB_enable is first activated
-        self.EPB_enable = 1
+          self.EPB_brake = 0
+        else:
+          self.EPB_brake = clip(accel, self.accel_last - self.long_ratelimit, self.accel_last + self.long_ratelimit)
+          self.EPB_enable = 1
       else:
         acc_control = 0 if acc_control != 6 and self.EPB_enable else acc_control  # Pulse ACC status to 0 for one frame
         self.EPB_enable = 0
@@ -176,6 +177,7 @@ class CarController(CarControllerBase):
       else:
         self.EPB_counter = 0
 
+      self.accel_last = accel
       if self.CCS == pqcan:
         can_sends.append(self.CCS.create_epb_control(self.packer_pt, CANBUS.br, self.EPB_brake, self.EPB_enable))
       can_sends.extend(self.CCS.create_acc_accel_control(self.packer_pt, CANBUS.pt, CS.acc_type, accel,
