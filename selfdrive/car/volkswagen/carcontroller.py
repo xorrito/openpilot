@@ -168,7 +168,7 @@ class CarController(CarControllerBase):
         else:
           self.EPB_brake = limit_jerk(accel, self.EPB_brake_last, self.long_jerklimit, 0.02)  # 0.02 = 50hz
           self.EPB_brake_last = self.EPB_brake
-          self.EPB_enable = 1
+        self.EPB_enable = 1
       else:
         acc_control = 0 if acc_control != 6 and self.EPB_enable else acc_control  # Pulse ACC status to 0 for one frame
         self.EPB_enable = 0
