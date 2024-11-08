@@ -14,6 +14,10 @@ VisualAlert = car.CarControl.HUDControl.VisualAlert
 LongCtrlState = car.CarControl.Actuators.LongControlState
 ButtonType = car.CarState.ButtonEvent.Type
 
+def limit_jerk(accel, prev_accel, max_jerk, dt):
+  max_delta_accel = max_jerk * dt
+  delta_accel = max(-max_delta_accel, min(accel - prev_accel, max_delta_accel))
+  return prev_accel + delta_accel
 
 class CarController(CarControllerBase):
   def __init__(self, dbc_name, CP, VM):
@@ -32,6 +36,7 @@ class CarController(CarControllerBase):
     self.accel_last = 0
     self.motor2_frame = 0
     self.EPB_brake = 0
+    self.EPB_brake_last = 0
     self.EPB_enable = 0
     self.EPB_counter = 0
     self.accel_diff = 0
@@ -154,14 +159,15 @@ class CarController(CarControllerBase):
                                                                             # SMA to EMA conversion: alpha = 2 / (n + 1)    n = SMA-sample
       self.accel_diff = (0.0019 * (accel - self.accel_last)) + (1 - 0.0019) * self.accel_diff         # 1000 SMA equivalence
       self.long_deviation = interp(abs(accel - self.accel_diff), [0, .2, .3], [.13, .1, 0])           # floating comfort band calculation
-      self.long_ratelimit = (0.011 * (clip(abs(accel), 0.7, 3))) + (1 - 0.011) * self.long_ratelimit  # set jerk/rate limit based on accel
+      self.long_ratelimit = (0.007 * (clip(abs(accel), 0.7, 3))) + (1 - 0.007) * self.long_ratelimit  # set jerk/rate limit based on accel
 
       if self.CCS == pqcan and CC.longActive and actuators.accel <= 0 and CS.out.vEgoRaw <= 5:
         if not self.EPB_enable:
           self.EPB_counter = 0  # Reset frame counter when EPB_enable is first activated
           self.EPB_brake = 0
         else:
-          self.EPB_brake = accel
+          self.EPB_brake = limit_jerk(accel, self.EPB_brake_last, self.long_ratelimit, 0.02)  # 0.02 = 50hz
+          self.EPB_brake_last = self.EPB_brake
           self.EPB_enable = 1
       else:
         acc_control = 0 if acc_control != 6 and self.EPB_enable else acc_control  # Pulse ACC status to 0 for one frame
