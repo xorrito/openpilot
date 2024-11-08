@@ -32,7 +32,6 @@ class CarController(CarControllerBase):
     self.accel_last = 0
     self.motor2_frame = 0
     self.EPB_brake = 0
-    self.EPB_brake_last = 0
     self.EPB_enable = 0
     self.EPB_counter = 0
     self.accel_diff = 0
@@ -162,8 +161,7 @@ class CarController(CarControllerBase):
           self.EPB_counter = 0  # Reset frame counter when EPB_enable is first activated
           self.EPB_brake = 0
         else:
-          self.EPB_brake = clip(accel, self.EPB_brake_last - self.long_ratelimit, self.EPB_brake_last + self.long_ratelimit)
-          self.EPB_brake_last = self.EPB_brake
+          self.EPB_brake = accel
           self.EPB_enable = 1
       else:
         acc_control = 0 if acc_control != 6 and self.EPB_enable else acc_control  # Pulse ACC status to 0 for one frame
