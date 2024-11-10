@@ -158,7 +158,7 @@ class CarController(CarControllerBase):
       accel = clip(actuators.accel, self.CCP.ACCEL_MIN, self.CCP.ACCEL_MAX) if CC.longActive else 0
                                                                             # SMA to EMA conversion: alpha = 2 / (n + 1)    n = SMA-sample
       self.accel_diff = (0.0019 * (accel - self.accel_last)) + (1 - 0.0019) * self.accel_diff         # 1000 SMA equivalence
-      self.long_deviation = interp(abs(accel - self.accel_diff), [0, .2, .3], [.13, .1, 0])           # floating comfort band calculation
+      self.long_deviation = interp(abs(accel - self.accel_diff), [0, .2, .3], [.2, .15, 0])           # floating comfort band calculation
       self.long_jerklimit = (0.007 * (clip(abs(accel), 0.7, 3))) + (1 - 0.007) * self.long_jerklimit  # set jerk limit based on accel
 
       if self.CCS == pqcan and CC.longActive and actuators.accel <= 0 and CS.out.vEgoRaw <= 5:
