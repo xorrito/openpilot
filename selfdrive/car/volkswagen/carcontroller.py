@@ -158,14 +158,14 @@ class CarController(CarControllerBase):
       accel = clip(actuators.accel, self.CCP.ACCEL_MIN, self.CCP.ACCEL_MAX) if CC.longActive else 0
                                                                             # SMA to EMA conversion: alpha = 2 / (n + 1)    n = SMA-sample
       self.accel_diff = (0.0019 * (accel - self.accel_last)) + (1 - 0.0019) * self.accel_diff         # 1000 SMA equivalence
-      self.long_deviation = interp(abs(accel - self.accel_diff), [0, .3, 1.], [.25, .25, 0])          # floating comfort band calculation
       self.long_jerklimit = (0.01 * (clip(abs(accel), 0.7, 2))) + (1 - 0.01) * self.long_jerklimit    # set jerk limit based on accel
+      self.long_deviation = clip(CS.out.vEgo/40, 0, 0.25) * interp(abs(accel - self.accel_diff), [0, .3, 1.], [1.0, 1.0, 0.0])
 
       if self.CCS == pqcan and CC.longActive and actuators.accel <= 0 and CS.out.vEgoRaw <= 5:
         if not self.EPB_enable:  # first frame of EPB entry
           self.EPB_counter = 0
           self.EPB_brake = 0
-          self.EPB_brake_last = accel
+          self.EPB_brake_last = accel - (CS.aEgoBremse / 2)
           self.EPB_enable = 1
         else:
           self.EPB_brake = limit_jerk(accel, self.EPB_brake_last, 0.7, 0.02)
