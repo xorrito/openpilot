@@ -165,7 +165,7 @@ class CarController(CarControllerBase):
         if not self.EPB_enable:  # first frame of EPB entry
           self.EPB_counter = 0
           self.EPB_brake = 0
-          self.EPB_brake_last = accel - (CS.aEgoBremse / 2)
+          self.EPB_brake_last = CS.aEgoBremse  # init EPB to the last value of ABS reported accel, not requested OP accel. prevents engagement jerk!
           self.EPB_enable = 1
         else:
           self.EPB_brake = limit_jerk(accel, self.EPB_brake_last, 0.7, 0.02)
