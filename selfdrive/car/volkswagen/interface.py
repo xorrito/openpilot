@@ -75,7 +75,7 @@ class CarInterface(CarInterfaceBase):
       ret.longitudinalTuning.kpBP = [0.,   11,  22,  33]
       ret.longitudinalTuning.kpV =  [.35, .39, .41, .41]
       ret.longitudinalTuning.kiBP = [0.,   11,  22,  33]
-      ret.longitudinalTuning.kiV =  [.62, .66, .70, .70]
+      ret.longitudinalTuning.kiV =  [.62, .66, .68, .68]
       ret.longitudinalActuatorDelay = 0.6
       CarInterfaceBase.configure_torque_tune(candidate, ret.lateralTuning)
     else:
