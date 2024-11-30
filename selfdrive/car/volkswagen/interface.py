@@ -73,7 +73,7 @@ class CarInterface(CarInterfaceBase):
       ret.steerActuatorDelay = 0.11
       ret.longitudinalTuning.kf = 1.2
       ret.longitudinalTuning.kpBP = [0.,  11,  22,  33]
-      ret.longitudinalTuning.kpV =  [.1, .38,  .4,  .4]
+      ret.longitudinalTuning.kpV =  [.3, .38,  .4,  .4]
       ret.longitudinalTuning.kiBP = [0.,  11,  22,  33]
       ret.longitudinalTuning.kiV =  [.6, .66, .66, .66]
       ret.longitudinalActuatorDelay = 0.6
