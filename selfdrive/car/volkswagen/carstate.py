@@ -256,7 +256,7 @@ class CarState(CarStateBase):
     if ret.cruiseState.speed > 70:  # 255 kph in m/s == no current setpoint
       ret.cruiseState.speed = 0
 
-    self.acc_sys_stock = pt_cp.vl["ACC_System"]
+    self.acc_sys_stock = ext_cp.vl["ACC_System"]
     self.motor2_stock = pt_cp.vl["Motor_2"]
     self.bremse8_stock = pt_cp.vl["Bremse_8"]
     self.bremse11_stock = pt_cp.vl["Bremse_11"]
