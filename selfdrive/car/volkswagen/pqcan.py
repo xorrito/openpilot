@@ -128,13 +128,20 @@ def create_motor2_control(packer, bus, motor2_stock):
     #  Bremse_8 : BR8_StaBrSyst     1 --> 0
     #  Motor_2  : GRA_Status        1 --> 0
 
+def filter_motor2(packer, bus, motor2_car, epb_freigabe):  # bus 0 --> 2
+  values = motor2_car
+  if epb_freigabe:
+    values.update({
+      "GRA_Status": 1,
+    })
+  return packer.make_can_msg("Motor_2", bus, values)
+
 def filter_bremse8(packer, bus, bremse8_car, epb_freigabe):  # bus 0 --> 2
   values = bremse8_car
   if epb_freigabe:
     values.update({
       "BR8_Sta_ACC_Anf": 1,
       "BR8_Verz_EPB_akt": 0,
-      "BR8_StaBrSyst": 1,
     })
   return packer.make_can_msg("Bremse_8", bus, values)
 
@@ -145,13 +152,15 @@ def filter_bremse11(packer, bus, bremse11_car, stopped):  # bus 0 --> 2
   })
   return packer.make_can_msg("Bremse_11", bus, values)
 
-def filter_motor2(packer, bus, motor2_car, epb_freigabe):  # bus 0 --> 2
-  values = motor2_car
-  if epb_freigabe:
-    values.update({
-      "GRA_Status": 1,
-    })
-  return packer.make_can_msg("Motor_2", bus, values)
+def filter_epb1(packer, bus, stopped):  # bus 0 --> 2
+  values = {
+    "EP1_Verzoegerung": 0,
+    "EP1_Freigabe_Ver": 0,
+    "EP1_Bremslicht": 0,
+    "EP1_HydrHalten": 1 if stopped else 0,
+    "EP1_AutoHold_aktiv": 1 if stopped else 0,
+  }
+  return packer.make_can_msg("EPB_1", bus, values)
 
 def filter_ACC_System(packer, bus, acc_car, epb_freigabe):  # bus 2 --> 0
   values = acc_car
@@ -164,7 +173,7 @@ def filter_ACC_System(packer, bus, acc_car, epb_freigabe):  # bus 2 --> 0
     })
   return packer.make_can_msg("ACC_System", bus, values)
 
-def create_epb_control(packer, bus, apply_brake, epb_enabled):  # bus 1, sometimes bus 2 --> 1 if EPB button pressed
+def create_epb_control(packer, bus, apply_brake, epb_enabled):  # bus 1
   values = {
     "EP1_Fehler_Sta": 0,
     "EP1_Sta_EPB": 0,

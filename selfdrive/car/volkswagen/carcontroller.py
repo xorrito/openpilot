@@ -19,6 +19,24 @@ def limit_jerk(accel, prev_accel, max_jerk, dt):
   delta_accel = max(-max_delta_accel, min(accel - prev_accel, max_delta_accel))
   return prev_accel + delta_accel
 
+def EPB_handler(self, ACS_Sta_ADR, ACS_Sollbeschl, vEgo):
+  if ACS_Sta_ADR == 1 and ACS_Sollbeschl <= 0 and vEgo <= (18 * CV.KPH_TO_MS):
+      if not self.EPB_enable:  # First frame of EPB entry
+          self.EPB_counter = 0
+          self.EPB_brake = 0
+          self.EPB_enable = 1
+      else:
+          self.EPB_brake = ACS_Sollbeschl
+      self.EPB_counter += 1
+  else:
+      if self.EPB_enable and self.EPB_counter < 8:  # Keep EPB_enable active for 8 frames
+          self.EPB_counter += 1
+      else:
+          self.EPB_brake = 0
+          self.EPB_enable = 0
+
+  return self.EPB_enable, self.EPB_brake
+
 class CarController(CarControllerBase):
   def __init__(self, dbc_name, CP, VM):
     super().__init__(dbc_name, CP, VM)
@@ -29,6 +47,10 @@ class CarController(CarControllerBase):
 
     self.apply_steer_last = 0
     self.gra_acc_counter_last = None
+    self.motor2_counter_last = None
+    self.bremse8_counter_last = None
+    self.bremse11_counter_last = None
+    self.acc_sys_counter_last = None
     self.eps_timer_soft_disable_alert = False
     self.hca_frame_timer_running = 0
     self.hca_frame_same_torque = 0
@@ -245,6 +267,28 @@ class CarController(CarControllerBase):
         self.motor2_frame = 0
       self.motor2_last = CS.motor2_stock
       self.motor2_frame += 1
+
+    # *** Below here is for OEM+ behavior modification of OEM ACC *** #
+    # Modify Motor_2, Bremse_8, Bremse_11
+    if VolkswagenFlags.PQ and not self.CP.openpilotLongitudinalControl:
+      stopped = CS.out.vEgoRaw == 0
+
+      if CS.acc_sys_stock["COUNTER"] != self.acc_sys_counter_last:
+        EPB_handler(self, CS.acc_sys_stock["ACS_Sta_ADR"], CS.acc_sys_stock["ACS_Sollbeschl"], CS.out.vEgoRaw)
+        can_sends.append(self.CCS.create_epb_control(self.packer_pt, CANBUS.br, self.EPB_brake, self.EPB_enable))
+        can_sends.append(self.CCS.filter_epb1(self.packer_pt, CANBUS.cam, stopped))  # in custom module, filter the gateway fwd EPB msg
+        can_sends.append(self.CCS.filter_ACC_System(self.packer_pt, CANBUS.pt, CS.acc_sys_stock, self.EPB_enable))
+      if CS.motor2_stock["COUNTER"] != self.motor2_counter_last:
+        can_sends.append(self.CCS.filter_motor2(self.packer_pt, CANBUS.cam, CS.motor2_stock, self.EPB_enable))
+      if CS.bremse8_stock["COUNTER"] != self.bremse8_counter_last:
+        can_sends.append(self.CCS.filter_bremse8(self.packer_pt, CANBUS.cam, CS.bremse8_stock, self.EPB_enable))
+      if CS.bremse11_stock["COUNTER"] != self.bremse11_counter_last:
+        can_sends.append(self.CCS.filter_bremse11(self.packer_pt, CANBUS.cam, CS.bremse11_stock, stopped))
+
+      self.acc_sys_counter_last = CS.acc_sys_stock["COUNTER"]
+      self.motor2_counter_last = CS.motor2_stock["COUNTER"]
+      self.bremse8_counter_last = CS.bremse8_stock["COUNTER"]
+      self.bremse11_counter_last = CS.bremse11_stock["COUNTER"]
 
     new_actuators = actuators.as_builder()
     new_actuators.steer = self.apply_steer_last / self.CCP.STEER_MAX
