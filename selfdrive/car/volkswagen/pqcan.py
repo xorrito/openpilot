@@ -99,23 +99,6 @@ def create_acc_accel_control(packer, bus, acc_type, accel, acc_control, stopping
 
   return commands
 
-def create_epb_control(packer, bus, apply_brake, epb_enabled):
-
-  values = {
-    "EP1_Fehler_Sta": 0,
-    "EP1_Sta_EPB": 0,
-    "EP1_Spannkraft": 0,
-    "EP1_Schalterinfo": 0,
-    "EP1_Fkt_Lampe": 0,
-    "EP1_Verzoegerung": apply_brake,                        #Brake request in m/s2
-    "EP1_Freigabe_Ver": 1 if epb_enabled else 0,            #Allow braking pressure to build.
-    "EP1_Bremslicht": 1 if apply_brake != 0 else 0,         #Enable brake lights
-    "EP1_HydrHalten": 1 if epb_enabled else 0,              #Disengage DSG
-    "EP1_AutoHold_aktiv": 1,                                #Signal indicating EPB is available
-  }
-
-  return packer.make_can_msg("EPB_1", bus, values)
-
 def create_acc_hud_control(packer, bus, acc_hud_status, set_speed, lead_distance, distance):
   values = {
     "ACA_StaACC": acc_hud_status,
@@ -135,3 +118,63 @@ def create_motor2_control(packer, bus, motor2_stock):
     "GRA_Status": 0,
   })
   return packer.make_can_msg("Motor_2", bus, values)
+
+
+    # *** Below here is for OEM+ behavior modification of OEM ACC *** #
+    # Modify Motor_2, Bremse_8, Bremse_11
+    # When EP1_Freigabe_Ver == 1 (OEM behavior observed)
+    #  Bremse_8 : BR8_Sta_ACC_Anf   1 --> 0
+    #  Bremse_8 : BR8_Verz_EPB_akt  0 --> 1
+    #  Bremse_8 : BR8_StaBrSyst     1 --> 0
+    #  Motor_2  : GRA_Status        1 --> 0
+
+def filter_bremse8(packer, bus, bremse8_car, epb_freigabe):  # bus 0 --> 2
+  values = bremse8_car
+  if epb_freigabe:
+    values.update({
+      "BR8_Sta_ACC_Anf": 1,
+      "BR8_Verz_EPB_akt": 0,
+      "BR8_StaBrSyst": 1,
+    })
+  return packer.make_can_msg("Bremse_8", bus, values)
+
+def filter_bremse11(packer, bus, bremse11_car, stopped):  # bus 0 --> 2
+  values = bremse11_car
+  values.update({
+    "B11_HydHalten": 1 if stopped else 0,
+  })
+  return packer.make_can_msg("Bremse_11", bus, values)
+
+def filter_motor2(packer, bus, motor2_car, epb_freigabe):  # bus 0 --> 2
+  values = motor2_car
+  if epb_freigabe:
+    values.update({
+      "GRA_Status": 1,
+    })
+  return packer.make_can_msg("Motor_2", bus, values)
+
+def filter_ACC_System(packer, bus, acc_car, epb_freigabe):  # bus 2 --> 0
+  values = acc_car
+  if epb_freigabe:
+    values.update({
+      "ACS_Sta_ADR": 0,
+      "ACS_StSt_Info": 0,
+      "ACS_FreigSollB": 0,
+      "ACS_Sollbeschl": 3.01,
+    })
+  return packer.make_can_msg("ACC_System", bus, values)
+
+def create_epb_control(packer, bus, apply_brake, epb_enabled):  # bus 1, sometimes bus 2 --> 1 if EPB button pressed
+  values = {
+    "EP1_Fehler_Sta": 0,
+    "EP1_Sta_EPB": 0,
+    "EP1_Spannkraft": 0,
+    "EP1_Schalterinfo": 0,
+    "EP1_Fkt_Lampe": 0,
+    "EP1_Verzoegerung": apply_brake,                        #Brake request in m/s2
+    "EP1_Freigabe_Ver": 1 if epb_enabled else 0,            #Allow braking pressure to build.
+    "EP1_Bremslicht": 1 if apply_brake != 0 else 0,         #Enable brake lights
+    "EP1_HydrHalten": 1 if epb_enabled else 0,
+    "EP1_AutoHold_aktiv": 1,                                #Signal indicating EPB is available
+  }
+  return packer.make_can_msg("EPB_1", bus, values)
