@@ -275,7 +275,7 @@ class CarController(CarControllerBase):
 
       if CS.acc_sys_stock["COUNTER"] != self.acc_sys_counter_last:
         EPB_handler(self, CS.acc_sys_stock["ACS_Sta_ADR"], CS.acc_sys_stock["ACS_Sollbeschl"], CS.out.vEgoRaw, stopped)
-        EPB_enabled = int(self.EPB_enable_last and not self.EPB_enable or self.EPB_enable)
+        EPB_enabled = int((self.EPB_enable_last and not self.EPB_enable) or self.EPB_enable)
         can_sends.append(self.CCS.filter_ACC_System(self.packer_pt, CANBUS.pt, CS.acc_sys_stock, EPB_enabled))
         can_sends.append(self.CCS.create_epb_control(self.packer_pt, CANBUS.br, self.EPB_brake, self.EPB_enable))
         can_sends.append(self.CCS.filter_epb1(self.packer_pt, CANBUS.cam, stopped))  # in custom module, filter the gateway fwd EPB msg
