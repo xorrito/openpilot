@@ -270,7 +270,7 @@ class CarController(CarControllerBase):
     # *** Below here is for OEM+ behavior modification of OEM ACC *** #
     # Modify Motor_2, Bremse_8, Bremse_11
     if VolkswagenFlags.PQ and not self.CP.openpilotLongitudinalControl:
-      stopped = CS.out.vEgoRaw == 0
+      stopped = CS.out.vEgoRaw == 0 and self.EPB_enable
 
       if CS.acc_sys_stock["COUNTER"] != self.acc_sys_counter_last:
         EPB_handler(self, CS.acc_sys_stock["ACS_Sta_ADR"], CS.acc_sys_stock["ACS_Sollbeschl"], CS.out.vEgoRaw)
