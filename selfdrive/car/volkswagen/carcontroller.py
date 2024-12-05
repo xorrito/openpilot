@@ -59,6 +59,7 @@ class CarController(CarControllerBase):
     self.EPB_brake = 0
     self.EPB_brake_last = 0
     self.EPB_enable = 0
+    self.EPB_enable_last = 0
     self.EPB_counter = 0
     self.accel_diff = 0
     self.long_deviation = 0
@@ -273,8 +274,9 @@ class CarController(CarControllerBase):
       stopped = CS.out.vEgoRaw == 0 and self.EPB_enable
 
       if CS.acc_sys_stock["COUNTER"] != self.acc_sys_counter_last:
-        can_sends.append(self.CCS.filter_ACC_System(self.packer_pt, CANBUS.pt, CS.acc_sys_stock, self.EPB_enable))
         EPB_handler(self, CS.acc_sys_stock["ACS_Sta_ADR"], CS.acc_sys_stock["ACS_Sollbeschl"], CS.out.vEgoRaw, stopped)
+        EPB_enabled = int(self.EPB_enable_last and not self.EPB_enable or self.EPB_enable)
+        can_sends.append(self.CCS.filter_ACC_System(self.packer_pt, CANBUS.pt, CS.acc_sys_stock, EPB_enabled))
         can_sends.append(self.CCS.create_epb_control(self.packer_pt, CANBUS.br, self.EPB_brake, self.EPB_enable))
         can_sends.append(self.CCS.filter_epb1(self.packer_pt, CANBUS.cam, stopped))  # in custom module, filter the gateway fwd EPB msg
       if self.motor2_frame % 2 or CS.motor2_stock != getattr(self, 'motor2_last', CS.motor2_stock):  # 50hz / 20ms
@@ -286,6 +288,7 @@ class CarController(CarControllerBase):
 
       self.motor2_last = CS.motor2_stock
       self.motor2_frame += 1
+      self.EPB_enable_last = self.EPB_enable
       self.acc_sys_counter_last = CS.acc_sys_stock["COUNTER"]
       self.bremse8_counter_last = CS.bremse8_stock["COUNTER"]
       self.bremse11_counter_last = CS.bremse11_stock["COUNTER"]
