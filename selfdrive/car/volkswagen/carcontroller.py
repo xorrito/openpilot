@@ -19,14 +19,14 @@ def limit_jerk(accel, prev_accel, max_jerk, dt):
   delta_accel = max(-max_delta_accel, min(accel - prev_accel, max_delta_accel))
   return prev_accel + delta_accel
 
-def EPB_handler(self, ACS_Sta_ADR, ACS_Sollbeschl, vEgo):
+def EPB_handler(self, ACS_Sta_ADR, ACS_Sollbeschl, vEgo, stopped):
   if ACS_Sta_ADR == 1 and ACS_Sollbeschl <= 0 and vEgo <= (18 * CV.KPH_TO_MS):
       if not self.EPB_enable:  # First frame of EPB entry
           self.EPB_counter = 0
           self.EPB_brake = 0
           self.EPB_enable = 1
       else:
-          self.EPB_brake = ACS_Sollbeschl
+          self.EPB_brake = ACS_Sollbeschl * 2 if stopped else ACS_Sollbeschl
       self.EPB_counter += 1
   else:
       if self.EPB_enable and self.EPB_counter < 8:  # Keep EPB_enable active for 8 frames
@@ -273,10 +273,10 @@ class CarController(CarControllerBase):
       stopped = CS.out.vEgoRaw == 0 and self.EPB_enable
 
       if CS.acc_sys_stock["COUNTER"] != self.acc_sys_counter_last:
-        EPB_handler(self, CS.acc_sys_stock["ACS_Sta_ADR"], CS.acc_sys_stock["ACS_Sollbeschl"], CS.out.vEgoRaw)
+        can_sends.append(self.CCS.filter_ACC_System(self.packer_pt, CANBUS.pt, CS.acc_sys_stock, self.EPB_enable))
+        EPB_handler(self, CS.acc_sys_stock["ACS_Sta_ADR"], CS.acc_sys_stock["ACS_Sollbeschl"], CS.out.vEgoRaw, stopped)
         can_sends.append(self.CCS.create_epb_control(self.packer_pt, CANBUS.br, self.EPB_brake, self.EPB_enable))
         can_sends.append(self.CCS.filter_epb1(self.packer_pt, CANBUS.cam, stopped))  # in custom module, filter the gateway fwd EPB msg
-        can_sends.append(self.CCS.filter_ACC_System(self.packer_pt, CANBUS.pt, CS.acc_sys_stock, self.EPB_enable))
       if self.motor2_frame % 2 or CS.motor2_stock != getattr(self, 'motor2_last', CS.motor2_stock):  # 50hz / 20ms
         can_sends.append(self.CCS.filter_motor2(self.packer_pt, CANBUS.cam, CS.motor2_stock, self.EPB_enable))
       if CS.bremse8_stock["COUNTER"] != self.bremse8_counter_last:
