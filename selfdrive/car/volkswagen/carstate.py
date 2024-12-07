@@ -257,6 +257,7 @@ class CarState(CarStateBase):
       ret.cruiseState.speed = 0
 
     self.acc_sys_stock = ext_cp.vl["ACC_System"]
+    self.acc_anz_stock = ext_cp.vl["ACC_GRA_Anzeige"]
     self.motor2_stock = pt_cp.vl["Motor_2"]
     self.bremse8_stock = pt_cp.vl["Bremse_8"]
     self.bremse11_stock = pt_cp.vl["Bremse_11"]

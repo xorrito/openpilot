@@ -173,6 +173,15 @@ def filter_ACC_System(packer, bus, acc_car, epb_freigabe):  # bus 2 --> 0
     })
   return packer.make_can_msg("ACC_System", bus, values)
 
+def filter_ACC_Anzeige(packer, bus, anz_car, blind):  # bus 2 --> 0
+  values = anz_car
+  if blind:
+    values.update({
+      "ACA_Fahrerhinw": 0,
+      "ACA_Akustik2": 0,
+    })
+  return packer.make_can_msg("ACC_GRA_Anzeige", bus, values)
+
 def create_epb_control(packer, bus, apply_brake, epb_enabled):  # bus 1
   values = {
     "EP1_Fehler_Sta": 0,

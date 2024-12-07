@@ -29,18 +29,32 @@ def EPB_handler(CS, self, ACS_Sta_ADR, ACS_Sollbeschl, vEgo, stopped):
           self.EPB_brake = ACS_Sollbeschl * 2 if stopped else ACS_Sollbeschl
       self.EPB_counter += 1
   else:
-      if self.EPB_enable and self.EPB_counter < 8:  # Keep EPB_enable active for 8 frames
+      if self.EPB_enable and self.EPB_counter < 10:  # Keep EPB_enable active for 10 frames
           self.EPB_counter += 1
       else:
           self.EPB_brake = 0
           self.EPB_enable = 0
 
   if CS.out.gasPressed or CS.out.brakePressed:
+    if self.EPB_enable:
+      self.ACC_anz_blind = 1
     self.EPB_brake = 0
     self.EPB_enable = 0
-    self.EPB_enable_last = 0
+    self.EPB_enable_prev = 0
+    self.EPB_enable_2old = 0
 
-  return self.EPB_enable, self.EPB_enable_last, self.EPB_brake
+  if self.ACC_anz_blind and self.ACC_anz_blind_counter < 150:
+    self.ACC_anz_blind_counter += 1
+  else:
+    self.ACC_anz_blind = 0
+    self.ACC_anz_blind_counter = 0
+
+  # Update EPB historical states and calculate EPB_active
+  self.EPB_active = int((self.EPB_enable_2old and not self.EPB_enable) or self.EPB_enable)
+  self.EPB_enable_2old = self.EPB_enable_prev
+  self.EPB_enable_prev = self.EPB_enable
+
+  return self.EPB_enable, self.EPB_brake, self.EPB_active
 
 class CarController(CarControllerBase):
   def __init__(self, dbc_name, CP, VM):
@@ -55,6 +69,9 @@ class CarController(CarControllerBase):
     self.bremse8_counter_last = None
     self.bremse11_counter_last = None
     self.acc_sys_counter_last = None
+    self.acc_anz_counter_last = None
+    self.ACC_anz_blind = 0
+    self.ACC_anz_blind_counter = 0
     self.eps_timer_soft_disable_alert = False
     self.hca_frame_timer_running = 0
     self.hca_frame_same_torque = 0
@@ -64,8 +81,9 @@ class CarController(CarControllerBase):
     self.EPB_brake = 0
     self.EPB_brake_last = 0
     self.EPB_enable = 0
-    self.EPB_enable_last = 0
-    self.EPB_enabled = 0
+    self.EPB_enable_prev = 0
+    self.EPB_enable_2old = 0
+    self.EPB_active = 0
     self.EPB_counter = 0
     self.accel_diff = 0
     self.long_deviation = 0
@@ -282,21 +300,22 @@ class CarController(CarControllerBase):
 
       if CS.acc_sys_stock["COUNTER"] != self.acc_sys_counter_last:
         EPB_handler(CS, self, CS.acc_sys_stock["ACS_Sta_ADR"], CS.acc_sys_stock["ACS_Sollbeschl"], CS.out.vEgoRaw, self.stopped)
-        self.EPB_enabled = int((self.EPB_enable_last and not self.EPB_enable) or self.EPB_enable)
-        can_sends.append(self.CCS.filter_ACC_System(self.packer_pt, CANBUS.pt, CS.acc_sys_stock, self.EPB_enabled))
+        can_sends.append(self.CCS.filter_ACC_System(self.packer_pt, CANBUS.pt, CS.acc_sys_stock, self.EPB_active))
         can_sends.append(self.CCS.create_epb_control(self.packer_pt, CANBUS.br, self.EPB_brake, self.EPB_enable))
         can_sends.append(self.CCS.filter_epb1(self.packer_pt, CANBUS.cam, self.stopped))  # in custom module, filter the gateway fwd EPB msg
+      if CS.acc_anz_stock["COUNTER"] != self.acc_anz_counter_last:
+        can_sends.append(self.CCS.filter_ACC_Anzeige(self.packer_pt, CANBUS.pt, CS.acc_anz_stock, self.ACC_anz_blind))
       if self.motor2_frame % 2 or CS.motor2_stock != getattr(self, 'motor2_last', CS.motor2_stock):  # 50hz / 20ms
-        can_sends.append(self.CCS.filter_motor2(self.packer_pt, CANBUS.cam, CS.motor2_stock, self.EPB_enabled))
+        can_sends.append(self.CCS.filter_motor2(self.packer_pt, CANBUS.cam, CS.motor2_stock, self.EPB_active))
       if CS.bremse8_stock["COUNTER"] != self.bremse8_counter_last:
-        can_sends.append(self.CCS.filter_bremse8(self.packer_pt, CANBUS.cam, CS.bremse8_stock, self.EPB_enabled))
+        can_sends.append(self.CCS.filter_bremse8(self.packer_pt, CANBUS.cam, CS.bremse8_stock, self.EPB_active))
       if CS.bremse11_stock["COUNTER"] != self.bremse11_counter_last:
         can_sends.append(self.CCS.filter_bremse11(self.packer_pt, CANBUS.cam, CS.bremse11_stock, self.stopped))
 
       self.motor2_last = CS.motor2_stock
       self.motor2_frame += 1
-      self.EPB_enable_last = self.EPB_enable
       self.acc_sys_counter_last = CS.acc_sys_stock["COUNTER"]
+      self.acc_anz_counter_last = CS.acc_anz_stock["COUNTER"]
       self.bremse8_counter_last = CS.bremse8_stock["COUNTER"]
       self.bremse11_counter_last = CS.bremse11_stock["COUNTER"]
 
