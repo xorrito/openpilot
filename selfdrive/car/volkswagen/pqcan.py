@@ -182,6 +182,14 @@ def filter_ACC_Anzeige(packer, bus, anz_car, blind):  # bus 2 --> 0
     })
   return packer.make_can_msg("ACC_GRA_Anzeige", bus, values)
 
+def filter_GRA_Neu(packer, bus, gra_car, resume):  # bus 2 --> 0
+  values = gra_car
+  if resume:
+    values.update({
+      "GRA_Recall": 1,
+    })
+  return packer.make_can_msg("GRA_Neu", bus, values)
+
 def create_epb_control(packer, bus, apply_brake, epb_enabled):  # bus 1
   values = {
     "EP1_Fehler_Sta": 0,
