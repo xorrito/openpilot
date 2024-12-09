@@ -289,9 +289,7 @@ class CarController(CarControllerBase):
     if VolkswagenFlags.PQ and self.ext_bus == CANBUS.cam and self.CP.openpilotLongitudinalControl:
       if self.frame % 2 or CS.motor2_stock != getattr(self, 'motor2_last', CS.motor2_stock):  # 50hz / 20ms
         can_sends.append(self.CCS.create_motor2_control(self.packer_pt, CANBUS.cam, CS.motor2_stock))
-        self.frame = 0
       self.motor2_last = CS.motor2_stock
-      self.frame += 1
 
     # *** Below here is for OEM+ behavior modification of OEM ACC *** #
     # Modify Motor_2, Bremse_8, Bremse_11
