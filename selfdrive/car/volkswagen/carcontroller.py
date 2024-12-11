@@ -25,8 +25,10 @@ def EPB_handler(CS, self, ACS_Sta_ADR, ACS_Sollbeschl, vEgo, stopping):
           self.EPB_counter = 0
           self.EPB_brake = 0
           self.EPB_enable = 1
+          self.EPB_brake_last = ACS_Sollbeschl
       else:
-          self.EPB_brake = -4 if stopping else ACS_Sollbeschl
+          self.EPB_brake = limit_jerk(-4, self.EPB_brake_last, 0.7, 0.02) if stopping else ACS_Sollbeschl
+          self.EPB_brake_last = self.EPB_brake
       self.EPB_counter += 1
   else:
       if self.EPB_enable and self.EPB_counter < 10:  # Keep EPB_enable active for 10 frames
@@ -295,7 +297,7 @@ class CarController(CarControllerBase):
     # *** Below here is for OEM+ behavior modification of OEM ACC *** #
     # Modify Motor_2, Bremse_8, Bremse_11
     if VolkswagenFlags.PQ and not self.CP.openpilotLongitudinalControl:
-      self.stopping = CS.acc_sys_stock["ACS_Anhaltewunsch"] and CS.out.vEgoRaw <= 1
+      self.stopping = CS.acc_sys_stock["ACS_Anhaltewunsch"] and (CS.out.vEgoRaw <= 1 or self.stopping)
       self.stopped = self.EPB_enable and (CS.out.vEgoRaw == 0 or (self.stopping and self.stopped))
 
       if CS.acc_sys_stock["COUNTER"] != self.acc_sys_counter_last:
