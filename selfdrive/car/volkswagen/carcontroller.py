@@ -19,14 +19,14 @@ def limit_jerk(accel, prev_accel, max_jerk, dt):
   delta_accel = max(-max_delta_accel, min(accel - prev_accel, max_delta_accel))
   return prev_accel + delta_accel
 
-def EPB_handler(CS, self, ACS_Sta_ADR, ACS_Sollbeschl, vEgo, stopped):
+def EPB_handler(CS, self, ACS_Sta_ADR, ACS_Sollbeschl, vEgo, stopping):
   if ACS_Sta_ADR == 1 and ACS_Sollbeschl <= 0 and vEgo <= (18 * CV.KPH_TO_MS):
       if not self.EPB_enable:  # First frame of EPB entry
           self.EPB_counter = 0
           self.EPB_brake = 0
           self.EPB_enable = 1
       else:
-          self.EPB_brake = ACS_Sollbeschl * 2 if stopped else ACS_Sollbeschl
+          self.EPB_brake = -4 if stopping else ACS_Sollbeschl
       self.EPB_counter += 1
   else:
       if self.EPB_enable and self.EPB_counter < 10:  # Keep EPB_enable active for 10 frames
@@ -89,6 +89,7 @@ class CarController(CarControllerBase):
     self.long_deviation = 0
     self.long_jerklimit = 0
     self.stopped = 0
+    self.stopping = 0
 
     self.sm = messaging.SubMaster(['longitudinalPlanSP'])
     self.param_s = Params()
@@ -294,10 +295,11 @@ class CarController(CarControllerBase):
     # *** Below here is for OEM+ behavior modification of OEM ACC *** #
     # Modify Motor_2, Bremse_8, Bremse_11
     if VolkswagenFlags.PQ and not self.CP.openpilotLongitudinalControl:
-      self.stopped = self.EPB_enable and (CS.out.vEgoRaw == 0 or (CS.acc_sys_stock["ACS_Anhaltewunsch"] and self.stopped))
+      self.stopping = CS.acc_sys_stock["ACS_Anhaltewunsch"] and CS.out.vEgoRaw <= 1
+      self.stopped = self.EPB_enable and (CS.out.vEgoRaw == 0 or (self.stopping and self.stopped))
 
       if CS.acc_sys_stock["COUNTER"] != self.acc_sys_counter_last:
-        EPB_handler(CS, self, CS.acc_sys_stock["ACS_Sta_ADR"], CS.acc_sys_stock["ACS_Sollbeschl"], CS.out.vEgoRaw, self.stopped)
+        EPB_handler(CS, self, CS.acc_sys_stock["ACS_Sta_ADR"], CS.acc_sys_stock["ACS_Sollbeschl"], CS.out.vEgoRaw, self.stopping)
         can_sends.append(self.CCS.filter_ACC_System(self.packer_pt, CANBUS.pt, CS.acc_sys_stock, self.EPB_active))
         can_sends.append(self.CCS.create_epb_control(self.packer_pt, CANBUS.br, self.EPB_brake, self.EPB_enable))
         can_sends.append(self.CCS.filter_epb1(self.packer_pt, CANBUS.cam, self.stopped))  # in custom module, filter the gateway fwd EPB msg

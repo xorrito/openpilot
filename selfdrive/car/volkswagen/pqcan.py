@@ -142,6 +142,7 @@ def filter_bremse8(packer, bus, bremse8_car, epb_freigabe):  # bus 0 --> 2
     values.update({
       "BR8_Sta_ACC_Anf": 1,
       "BR8_Verz_EPB_akt": 0,
+      "BR8_StaBrSyst": 1,
     })
   return packer.make_can_msg("Bremse_8", bus, values)
 
@@ -158,7 +159,7 @@ def filter_epb1(packer, bus, stopped):  # bus 0 --> 2
     "EP1_Freigabe_Ver": 0,
     "EP1_Bremslicht": 0,
     "EP1_HydrHalten": 1 if stopped else 0,
-    "EP1_AutoHold_aktiv": 1 if stopped else 0,
+    "EP1_AutoHold_aktiv": 1,
   }
   return packer.make_can_msg("EPB_1", bus, values)
 
