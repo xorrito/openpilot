@@ -128,17 +128,17 @@ def create_motor2_control(packer, bus, motor2_stock):
     #  Bremse_8 : BR8_StaBrSyst     1 --> 0
     #  Motor_2  : GRA_Status        1 --> 0
 
-def filter_motor2(packer, bus, motor2_car, epb_freigabe):  # bus 0 --> 2
+def filter_motor2(packer, bus, motor2_car, active):  # bus 0 --> 2
   values = motor2_car
-  if epb_freigabe:
+  if active:
     values.update({
       "GRA_Status": 1,
     })
   return packer.make_can_msg("Motor_2", bus, values)
 
-def filter_bremse8(packer, bus, bremse8_car, epb_freigabe):  # bus 0 --> 2
+def filter_bremse8(packer, bus, bremse8_car, active):  # bus 0 --> 2
   values = bremse8_car
-  if epb_freigabe:
+  if active:
     values.update({
       "BR8_Sta_ACC_Anf": 1,
       "BR8_Verz_EPB_akt": 0,
