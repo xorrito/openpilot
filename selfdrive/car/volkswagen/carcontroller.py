@@ -308,9 +308,9 @@ class CarController(CarControllerBase):
       if CS.acc_anz_stock["COUNTER"] != self.acc_anz_counter_last:
         can_sends.append(self.CCS.filter_ACC_Anzeige(self.packer_pt, CANBUS.pt, CS.acc_anz_stock, self.ACC_anz_blind))
       if self.frame % 2 or CS.motor2_stock != getattr(self, 'motor2_last', CS.motor2_stock):  # 50hz / 20ms
-        can_sends.append(self.CCS.filter_motor2(self.packer_pt, CANBUS.cam, CS.motor2_stock, active = CS.acc_sys_stock["ACS_Sta_ADR"] == 1))
+        can_sends.append(self.CCS.filter_motor2(self.packer_pt, CANBUS.cam, CS.motor2_stock, self.EPB_active))
       if CS.bremse8_stock["COUNTER"] != self.bremse8_counter_last:
-        can_sends.append(self.CCS.filter_bremse8(self.packer_pt, CANBUS.cam, CS.bremse8_stock, active = CS.acc_sys_stock["ACS_Sta_ADR"] == 1))
+        can_sends.append(self.CCS.filter_bremse8(self.packer_pt, CANBUS.cam, CS.bremse8_stock, self.EPB_active))
       if CS.bremse11_stock["COUNTER"] != self.bremse11_counter_last:
         can_sends.append(self.CCS.filter_bremse11(self.packer_pt, CANBUS.cam, CS.bremse11_stock, self.stopped))
       if CS.gra_stock_values["COUNTER"] != self.gra_acc_counter_last:
