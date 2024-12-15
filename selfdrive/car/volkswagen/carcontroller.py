@@ -310,7 +310,7 @@ class CarController(CarControllerBase):
       if self.frame % 2 or CS.motor2_stock != getattr(self, 'motor2_last', CS.motor2_stock):  # 50hz / 20ms
         can_sends.append(self.CCS.filter_motor2(self.packer_pt, CANBUS.cam, CS.motor2_stock, self.EPB_active))
       if CS.bremse8_stock["COUNTER"] != self.bremse8_counter_last:
-        can_sends.append(self.CCS.filter_bremse8(self.packer_pt, CANBUS.cam, CS.bremse8_stock, self.EPB_active))
+        can_sends.append(self.CCS.filter_bremse8(self.packer_pt, CANBUS.cam, CS.bremse8_stock, self.stopped))
       if self.frame % 10 or CS.bremse11_stock != self.bremse11_last:
         can_sends.append(self.CCS.filter_bremse11(self.packer_pt, CANBUS.cam, CS.bremse11_stock, self.stopped))
       if CS.gra_stock_values["COUNTER"] != self.gra_acc_counter_last:
