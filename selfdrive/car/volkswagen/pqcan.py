@@ -158,7 +158,7 @@ def filter_epb1(packer, bus, stopped):  # bus 0 --> 2
     "EP1_Verzoegerung": 0,
     "EP1_Freigabe_Ver": 0,
     "EP1_Bremslicht": 0,
-    "EP1_HydrHalten": 1 if stopped else 0,
+    "EP1_HydrHalten": 1,
     "EP1_AutoHold_aktiv": 1,
   }
   return packer.make_can_msg("EPB_1", bus, values)
@@ -193,15 +193,10 @@ def filter_GRA_Neu(packer, bus, gra_car, resume):  # bus 2 --> 0
 
 def create_epb_control(packer, bus, apply_brake, epb_enabled):  # bus 1
   values = {
-    "EP1_Fehler_Sta": 0,
-    "EP1_Sta_EPB": 0,
-    "EP1_Spannkraft": 0,
-    "EP1_Schalterinfo": 0,
-    "EP1_Fkt_Lampe": 0,
-    "EP1_Verzoegerung": apply_brake,                        #Brake request in m/s2
-    "EP1_Freigabe_Ver": 1 if epb_enabled else 0,            #Allow braking pressure to build.
-    "EP1_Bremslicht": 1 if apply_brake != 0 else 0,         #Enable brake lights
-    "EP1_HydrHalten": 1 if epb_enabled else 0,
-    "EP1_AutoHold_aktiv": 1,                                #Signal indicating EPB is available
+    "EP1_Verzoegerung": 0,
+    "EP1_Freigabe_Ver": 0,
+    "EP1_Bremslicht": 0,
+    "EP1_HydrHalten": 1,
+    "EP1_AutoHold_aktiv": 1,
   }
   return packer.make_can_msg("EPB_1", bus, values)
