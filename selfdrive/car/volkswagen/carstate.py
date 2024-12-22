@@ -219,7 +219,7 @@ class CarState(CarStateBase):
     # Update ACC radar status.
     self.acc_type = 0  # TODO: this is ACC "basic" with nonzero min speed, support FtS (1) later
     ret.cruiseState.available = bool(pt_cp.vl["Motor_5"]["GRA_Hauptschalter"])
-    ret.cruiseState.enabled = bool(pt_cp.vl["Motor_2"]["GRA_Status"])
+    ret.cruiseState.enabled = pt_cp.vl["Motor_2"]["GRA_Status"] in (1, 2) or bool(pt_cp.vl["Bremse_8"]["BR8_Verz_EPB_akt"])
     if self.CP.pcmCruise:
       self.acc_faulted = ext_cp.vl["ACC_GRA_Anziege"]["ACA_StaACC"] in (6, 7)
     # TODO: update opendbc with PQ TSK state for OP long accFaulted
@@ -229,6 +229,12 @@ class CarState(CarStateBase):
     ret.cruiseState.speed = ext_cp.vl["ACC_GRA_Anziege"]["ACA_V_Wunsch"] * CV.KPH_TO_MS
     if ret.cruiseState.speed > 70:  # 255 kph in m/s == no current setpoint
       ret.cruiseState.speed = 0
+
+    self.acc_sys_stock = ext_cp.vl["ACC_System"]
+    self.acc_anz_stock = ext_cp.vl["ACC_GRA_Anzeige"]
+    self.motor2_stock = pt_cp.vl["Motor_2"]
+    self.bremse8_stock = pt_cp.vl["Bremse_8"]
+    self.bremse11_stock = pt_cp.vl["Bremse_11"]
 
     # Update button states for turn signals and ACC controls, capture all ACC button state/config for passthrough
     ret.leftBlinker, ret.rightBlinker = self.update_blinker_from_stalk(300, pt_cp.vl["Gate_Komf_1"]["GK1_Blinker_li"],
@@ -409,6 +415,8 @@ class CarState(CarStateBase):
       ("GRA_Zeitluecke", "GRA_Neu"),             # ACC button, time gap adj
       ("COUNTER", "GRA_Neu"),                    # ACC button, message counter
       ("GRA_Sender", "GRA_Neu"),                 # ACC button, CAN message originator
+      ("COUNTER", "Bremse_8"),
+      ("COUNTER", "Bremse_11"),
     ]
 
     checks = [
@@ -420,6 +428,8 @@ class CarState(CarStateBase):
       ("Motor_3", 100),     # From J623 Engine control module
       ("Airbag_1", 50),     # From J234 Airbag control module
       ("Bremse_5", 50),     # From J104 ABS/ESP controller
+      ("Bremse_8", 50),     # From J104 ABS/ESP controller
+      ("Bremse_11", 10),    # From J104 ABS/ESP controller
       ("GRA_Neu", 50),      # From J??? steering wheel control buttons
       ("Kombi_1", 50),      # From J285 Instrument cluster
       ("Motor_2", 50),      # From J623 Engine control module
@@ -504,10 +514,16 @@ class MqbExtraSignals:
 class PqExtraSignals:
   # Additional signal and message lists for optional or bus-portable controllers
   fwd_radar_signals = [
+    ("ACS_Anhaltewunsch", "ACC_System"),
+    ("ACS_Sta_ADR", "ACC_System"),
+    ("ACS_Sollbeschl", "ACC_System"),
+    ("COUNTER", "ACC_System"),
     ("ACA_StaACC", "ACC_GRA_Anziege", 0),           # ACC drivetrain coordinator status
     ("ACA_V_Wunsch", "ACC_GRA_Anziege", 0),         # ACC set speed
+    ("COUNTER", "ACC_GRA_Anzeige"),
   ]
   fwd_radar_checks = [
+    ("ACC_System", 50),                             # From J428 ACC radar control module
     ("ACC_GRA_Anziege", 25),                        # From J428 ACC radar control module
   ]
   bsm_radar_signals = [
