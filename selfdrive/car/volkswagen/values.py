@@ -37,7 +37,7 @@ class CarControllerParams:
   DEFAULT_MIN_STEER_SPEED = 0.4            # m/s, newer EPS racks fault below this speed, don't show a low speed alert
 
   ACCEL_MAX = 2.0                          # 2.0 m/s max acceleration
-  ACCEL_MIN = -5.0                         # 3.5 m/s max deceleration
+  ACCEL_MIN = -3.5                         # 3.5 m/s max deceleration
 
   def __init__(self, CP):
     can_define = CANDefine(DBC[CP.carFingerprint]["pt"])
@@ -304,7 +304,7 @@ class CAR(Platforms):
   )
   VOLKSWAGEN_PASSAT_NMS = VolkswagenPQPlatformConfig(
     [VWCarDocs("Volkswagen Passat NMS 2017-22")],
-    VolkswagenCarSpecs(mass=1503, wheelbase=2.80),
+    VolkswagenCarSpecs(mass=1503, wheelbase=2.80, minEnableSpeed=16*CV.KPH_TO_MS),
     chassis_codes={"A3"},
     wmis={WMI.VOLKSWAGEN_USA_CAR},
   )
