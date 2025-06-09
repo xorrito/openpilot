@@ -39,6 +39,7 @@ class CarController(CarControllerBase):
     self.EPB_brake_last = 0
     self.EPB_enable = 0
     self.EPB_counter = 0
+    self.apply_brake_mfd = 0
     self.accel_diff = 0
     self.long_deviation = 0
     self.long_jerklimit = 0
@@ -160,7 +161,7 @@ class CarController(CarControllerBase):
       self.accel_diff = (0.0019 * (accel - self.accel_last)) + (1 - 0.0019) * self.accel_diff         # 1000 SMA equivalence
       self.long_jerklimit = (0.01 * (clip(abs(accel), 0.7, 2))) + (1 - 0.01) * self.long_jerklimit    # set jerk limit based on accel
       self.long_deviation = clip(CS.out.vEgo/40, 0, 0.13) * interp(abs(accel - self.accel_diff), [0, .2, 1.], [0.0, 0.0, 0.0])
-
+      
       if self.CCS == pqcan and CC.longActive and actuators.accel <= 0 and CS.out.vEgoRaw <= 5:
         if not self.EPB_enable:  # first frame of EPB entry
           self.EPB_counter = 0
@@ -207,8 +208,12 @@ class CarController(CarControllerBase):
       acc_hud_status = self.CCS.acc_hud_status_value(CS.out.cruiseState.available, CS.out.accFaulted, acc_control, CC.cruiseControl.override)
       # FIXME: follow the recent displayed-speed updates, also use mph_kmh toggle to fix display rounding problem?
       set_speed = hud_control.setSpeed * CV.MS_TO_KPH
+      if CS.out.vEgoRaw <= 18 CV.MS_TO_KPH:
+        self.apply_brake_mfd = 1
+      else: 
+        self.apply_brake_mfd = 0
       can_sends.append(self.CCS.create_acc_hud_control(self.packer_pt, CANBUS.pt, acc_hud_status, set_speed,
-                                                       lead_distance, hud_control.leadDistanceBars))
+                                                       lead_distance, self.apply_brake_mfd, hud_control.leadDistanceBars))
 
     # **** Stock ACC Button Controls **************************************** #
 
