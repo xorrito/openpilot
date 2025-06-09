@@ -116,13 +116,14 @@ def create_epb_control(packer, bus, apply_brake, epb_enabled):
 
   return packer.make_can_msg("EPB_1", bus, values)
 
-def create_acc_hud_control(packer, bus, acc_hud_status, set_speed, lead_distance, distance):
+def create_acc_hud_control(packer, bus, acc_hud_status, set_speed, lead_distance, distance, apply_brake_mfd):
   values = {
     "ACA_StaACC": acc_hud_status,
     "ACA_Zeitluecke": distance + 2,
     "ACA_V_Wunsch": set_speed,
     "ACA_gemZeitl": lead_distance,
-    "ACA_PrioDisp": 3,
+    "ACA_PrioDisp": 0 if apply_brake_mfd else 3,
+    "ACA_Akustik2": 1 if acc_type == 0 and apply_brake_mfd else 0,
     # TODO: restore dynamic pop-to-foreground/highlight behavior with ACA_PrioDisp and ACA_AnzDisplay
     # TODO: ACA_kmh_mph handling probably needed to resolve rounding errors in displayed setpoint
   }
