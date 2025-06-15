@@ -208,7 +208,7 @@ class CarController(CarControllerBase):
       acc_hud_status = self.CCS.acc_hud_status_value(CS.out.cruiseState.available, CS.out.accFaulted, acc_control, CC.cruiseControl.override)
       # FIXME: follow the recent displayed-speed updates, also use mph_kmh toggle to fix display rounding problem?
       set_speed = hud_control.setSpeed * CV.MS_TO_KPH
-      if CS.out.vEgoRaw <= 18 CV.MS_TO_KPH:
+      if CS.out.vEgo <= 18 CV.MS_TO_KPH:
         self.apply_brake_mfd = 1
       else: 
         self.apply_brake_mfd = 0
